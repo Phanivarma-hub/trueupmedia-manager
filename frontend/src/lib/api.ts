@@ -16,4 +16,19 @@ export const gmApi = {
     updateStatus: (id: string, new_status: string) => api.patch(`/content/${id}/status`, { new_status }),
 };
 
+const adminBase = axios.create({
+    baseURL: 'http://localhost:3001/api/admin',
+});
+
+export const adminApi = {
+    getClients: () => adminBase.get('/clients'),
+    addClient: (data: any) => adminBase.post('/clients', data),
+    updateClient: (id: string, data: any) => adminBase.put(`/clients/${id}`, data),
+    deleteClient: (id: string) => adminBase.delete(`/clients/${id}`),
+    getStats: () => adminBase.get('/stats'),
+    getTeam: () => adminBase.get('/team'),
+    addTeamMember: (data: any) => adminBase.post('/team', data),
+    deleteTeamMember: (id: string) => adminBase.delete(`/team/${id}`),
+};
+
 export default api;

@@ -28,8 +28,7 @@ const STATUS_FLOWS = {
     ]
 };
 
-// ─── Load Clients ───
-// clients table: id, company_name, is_active, is_deleted
+// ─── GM: Clients ───
 app.get('/api/gm/clients', async (req, res) => {
     const { data, error } = await supabase
         .from('clients')
@@ -41,10 +40,9 @@ app.get('/api/gm/clients', async (req, res) => {
     res.json(data);
 });
 
-// ─── Load Calendar Data for a Client ───
-// content_items table: id, client_id, title, scheduled_datetime (timestamptz), status, content_type, description, creative_url
+// ─── GM: Calendar ───
 app.get('/api/gm/calendar', async (req, res) => {
-    const { client_id, month } = req.query; // month format: YYYY-MM
+    const { client_id, month } = req.query;
     if (!client_id || !month) return res.status(400).json({ error: 'Missing client_id or month' });
 
     const [year, mon] = month.split('-');
@@ -64,7 +62,7 @@ app.get('/api/gm/calendar', async (req, res) => {
     res.json(data);
 });
 
-// ─── Master Calendar (all clients) ───
+// ─── GM: Master Calendar ───
 app.get('/api/gm/master-calendar', async (req, res) => {
     const { month, client_id, content_type } = req.query;
     if (!month) return res.status(400).json({ error: 'Missing month' });
@@ -89,57 +87,58 @@ app.get('/api/gm/master-calendar', async (req, res) => {
     res.json(data);
 });
 
-// ─── Add Content Item ───
+// ─── GM: Content CRUD ───
 app.post('/api/gm/content', async (req, res) => {
     const { client_id, title, description, content_type, scheduled_datetime } = req.body;
-    
     const initial_status = content_type === 'Post' ? 'CONTENT APPROVED' : 'CONTENT READY';
 
     const { data, error } = await supabase
         .from('content_items')
-        .insert([{
-            client_id,
-            title,
-            description,
-            content_type,
-            scheduled_datetime,
-            status: initial_status
-        }])
+        .insert([{ client_id, title, description, content_type, scheduled_datetime, status: initial_status }])
         .select();
 
     if (error) return res.status(500).json({ error: error.message });
     res.json(data[0]);
 });
 
-// ─── Edit Content Item ───
 app.put('/api/gm/content/:id', async (req, res) => {
     const { id } = req.params;
     const { title, description, scheduled_datetime } = req.body;
-
     const { data, error } = await supabase
         .from('content_items')
         .update({ title, description, scheduled_datetime })
         .eq('id', id)
         .select();
-
     if (error) return res.status(500).json({ error: error.message });
     res.json(data[0]);
 });
 
-// ─── Delete Content Item ───
 app.delete('/api/gm/content/:id', async (req, res) => {
     const { id } = req.params;
-
-    const { error } = await supabase
-        .from('content_items')
-        .delete()
-        .eq('id', id);
-
+    const { error } = await supabase.from('content_items').delete().eq('id', id);
     if (error) return res.status(500).json({ error: error.message });
     res.json({ message: 'Deleted successfully' });
 });
 
-// ─── Status Update with strict workflow validation ───
+app.get('/api/gm/content/:id', async (req, res) => {
+    const { id } = req.params;
+    const { data: item, error: itemError } = await supabase
+        .from('content_items')
+        .select(`*, clients (company_name)`)
+        .eq('id', id)
+        .single();
+
+    if (itemError) return res.status(500).json({ error: itemError.message });
+
+    const { data: logs } = await supabase
+        .from('status_logs')
+        .select('*')
+        .eq('item_id', id)
+        .order('changed_at', { ascending: false });
+
+    res.json({ item, history: logs || [] });
+});
+
 app.patch('/api/gm/content/:id/status', async (req, res) => {
     const { id } = req.params;
     const { new_status } = req.body;
@@ -158,7 +157,7 @@ app.patch('/api/gm/content/:id/status', async (req, res) => {
 
     if (newIndex !== currentIndex + 1) {
         return res.status(400).json({ 
-            error: `Invalid status transition. Next status should be: ${flow[currentIndex + 1] || 'None (already completed)'}` 
+            error: `Invalid status transition. Next status should be: ${flow[currentIndex + 1] || 'None'}` 
         });
     }
 
@@ -169,37 +168,92 @@ app.patch('/api/gm/content/:id/status', async (req, res) => {
 
     if (updateError) return res.status(500).json({ error: updateError.message });
 
-    // Log the change in status_logs (item_id references content_items.id)
-    await supabase
-        .from('status_logs')
-        .insert([{
-            item_id: id,
-            old_status: item.status,
-            new_status: new_status
-        }]);
-
+    await supabase.from('status_logs').insert([{ item_id: id, old_status: item.status, new_status: new_status }]);
     res.json({ message: 'Status updated successfully', new_status });
 });
 
-// ─── View Content Details ───
-app.get('/api/gm/content/:id', async (req, res) => {
+// ─── Admin: Client Management ───
+app.get('/api/admin/clients', async (req, res) => {
+    const { data, error } = await supabase.from('clients').select('*').eq('is_deleted', false).order('company_name');
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+});
+
+app.post('/api/admin/clients', async (req, res) => {
+    const { company_name, phone, email, address } = req.body;
+    if (!company_name) return res.status(400).json({ error: 'Company Name is mandatory' });
+    const { data, error } = await supabase.from('clients').insert([{ company_name, phone, email, address, is_active: true, is_deleted: false }]).select();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data[0]);
+});
+
+app.put('/api/admin/clients/:id', async (req, res) => {
     const { id } = req.params;
+    const { company_name, phone, email, address, is_active } = req.body;
+    const { data, error } = await supabase.from('clients').update({ company_name, phone, email, address, is_active }).eq('id', id).select();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data[0]);
+});
 
-    const { data: item, error: itemError } = await supabase
-        .from('content_items')
-        .select(`*, clients (company_name)`)
-        .eq('id', id)
-        .single();
+app.delete('/api/admin/clients/:id', async (req, res) => {
+    const { id } = req.params;
+    const { error } = await supabase.from('clients').delete().eq('id', id);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ message: 'Client removed successfully' });
+});
 
-    if (itemError) return res.status(500).json({ error: itemError.message });
+// ─── Admin: Team Management ───
+app.get('/api/admin/team', async (req, res) => {
+    const { data, error } = await supabase.from('users').select('*').in('role', ['TL1', 'TL2']).order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+});
 
-    const { data: logs } = await supabase
-        .from('status_logs')
-        .select('*')
-        .eq('item_id', id)
-        .order('changed_at', { ascending: false });
+app.post('/api/admin/team', async (req, res) => {
+    const { name, email, password, role } = req.body;
+    if (!name || !email || !password || !role) return res.status(400).json({ error: 'Missing fields' });
 
-    res.json({ item, history: logs || [] });
+    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+        email, password, email_confirm: true, user_metadata: { role, name }
+    });
+    if (authError) return res.status(500).json({ error: authError.message });
+
+    const { data, error } = await supabase.from('users').insert([{ user_id: authUser.user.id, name, email, password_hash: 'managed_by_auth', role }]).select();
+    if (error) {
+        await supabase.auth.admin.deleteUser(authUser.user.id);
+        return res.status(500).json({ error: error.message });
+    }
+    res.json(data[0]);
+});
+
+app.delete('/api/admin/team/:id', async (req, res) => {
+    const { id } = req.params;
+    await supabase.auth.admin.deleteUser(id);
+    const { error } = await supabase.from('users').delete().eq('user_id', id);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ message: 'Team member removed' });
+});
+
+// ─── Admin: Dashboard Stats ───
+app.get('/api/admin/stats', async (req, res) => {
+    const { count: clientCount } = await supabase.from('clients').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('is_deleted', false);
+    
+    const now = new Date();
+    const year = now.getFullYear();
+    const mon = String(now.getMonth() + 1).padStart(2, '0');
+    const startDate = `${year}-${mon}-01T00:00:00`;
+    const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+    const endDate = `${year}-${mon}-${String(lastDay).padStart(2, '0')}T23:59:59`;
+
+    const { count: itemCount } = await supabase.from('content_items').select('*', { count: 'exact', head: true }).gte('scheduled_datetime', startDate).lte('scheduled_datetime', endDate);
+
+    const { data: statusData } = await supabase.from('content_items').select('status');
+    const statusSummary = {};
+    if (statusData) {
+        statusData.forEach(item => { statusSummary[item.status] = (statusSummary[item.status] || 0) + 1; });
+    }
+
+    res.json({ totalClients: clientCount, totalItemsThisMonth: itemCount, statusSummary });
 });
 
 const PORT = process.env.PORT || 3001;
