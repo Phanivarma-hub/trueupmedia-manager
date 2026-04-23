@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { adminApi } from '@/lib/api';
-import { Plus, Search, Trash2, X, UserCheck, Shield, Key } from 'lucide-react';
+import { Plus, Search, Trash2, X, UserCheck, Shield, Key, Edit2 } from 'lucide-react';
 
 interface TeamMember {
   user_id: string;
@@ -19,6 +19,7 @@ export default function TeamManagement() {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -44,7 +45,20 @@ export default function TeamManagement() {
   }, []);
 
   const handleAddClick = () => {
+    setEditingMember(null);
     setFormData({ name: '', email: '', password: '', role: 'TEAM LEAD', role_identifier: 'TL1' });
+    setShowModal(true);
+  };
+
+  const handleEditClick = (member: TeamMember) => {
+    setEditingMember(member);
+    setFormData({
+      name: member.name,
+      email: member.email,
+      password: '', // Leave blank if not changing
+      role: member.role,
+      role_identifier: member.role_identifier || '',
+    });
     setShowModal(true);
   };
 
@@ -63,7 +77,14 @@ export default function TeamManagement() {
     e.preventDefault();
     setLoading(true);
     try {
-      await adminApi.addTeamMember(formData);
+      if (editingMember) {
+        // Password is optional during edit
+        const updatePayload = { ...formData };
+        if (!updatePayload.password) delete (updatePayload as any).password;
+        await adminApi.updateTeamMember(editingMember.user_id, updatePayload);
+      } else {
+        await adminApi.addTeamMember(formData);
+      }
       setShowModal(false);
       fetchTeam();
     } catch (err: any) {
@@ -145,9 +166,14 @@ export default function TeamManagement() {
                   </td>
                   <td>{new Date(member.created_at).toLocaleDateString()}</td>
                   <td style={{ textAlign: 'right' }}>
-                    <button className="btn-icon delete" onClick={() => handleDeleteClick(member.user_id, member.name)}>
-                      <Trash2 size={14} />
-                    </button>
+                    <div className="action-btns" style={{ justifyContent: 'flex-end' }}>
+                      <button className="btn-icon" onClick={() => handleEditClick(member)}>
+                        <Edit2 size={14} />
+                      </button>
+                      <button className="btn-icon delete" onClick={() => handleDeleteClick(member.user_id, member.name)}>
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -167,7 +193,7 @@ export default function TeamManagement() {
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
-              <h3 className="modal-title">Create Team Lead</h3>
+              <h3 className="modal-title">{editingMember ? 'Edit Team Lead' : 'Create Team Lead'}</h3>
               <button onClick={() => setShowModal(false)} className="modal-close"><X size={20}/></button>
             </div>
             <form onSubmit={handleSubmit}>
@@ -198,15 +224,15 @@ export default function TeamManagement() {
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Password *</label>
+                <label className="form-label">Password {editingMember ? '(Optional)' : '*'}</label>
                 <div style={{ position: 'relative' }}>
                   <input 
                     type="password" 
                     className="form-input" 
-                    required
+                    required={!editingMember}
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    placeholder="Minimum 6 characters"
+                    placeholder={editingMember ? "Leave blank to keep current" : "Minimum 6 characters"}
                     style={{ width: '100%' }}
                   />
                   <Key size={14} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: '#cbd5e1' }} />
@@ -231,7 +257,7 @@ export default function TeamManagement() {
               <div className="modal-footer">
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
                 <button type="submit" className="btn-primary" disabled={loading} style={{ width: 'auto', padding: '10px 24px' }}>
-                  {loading ? 'Creating...' : 'Create Account'}
+                  {loading ? (editingMember ? 'Saving...' : 'Creating...') : (editingMember ? 'Save Changes' : 'Create Account')}
                 </button>
               </div>
             </form>

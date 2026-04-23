@@ -49,6 +49,7 @@ export default function GMDashboard() {
     const [clients, setClients] = useState<any[]>([]);
     const [selectedClient, setSelectedClient] = useState<string>('');
     const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
     const [calendarData, setCalendarData] = useState<ContentItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [view, setView] = useState<'client' | 'master' | 'teams'>('client');
@@ -64,6 +65,8 @@ export default function GMDashboard() {
     const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
     const [activeItem, setActiveItem] = useState<any>(null);
     
+    const isMasterMode = view === 'master';
+
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -126,10 +129,25 @@ export default function GMDashboard() {
         } catch (err) { console.error(err); } finally { setLoading(false); }
     };
 
-    const days = eachDayOfInterval({
-        start: startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 }),
-        end: endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 1 })
-    });
+    const days = viewMode === 'month' 
+        ? eachDayOfInterval({
+            start: startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 }),
+            end: endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 1 })
+          })
+        : eachDayOfInterval({
+            start: startOfWeek(currentMonth, { weekStartsOn: 1 }),
+            end: endOfWeek(currentMonth, { weekStartsOn: 1 })
+          });
+
+    const handlePrev = () => {
+        if (viewMode === 'month') setCurrentMonth(subMonths(currentMonth, 1));
+        else setCurrentMonth(prev => new Date(prev.setDate(prev.getDate() - 7)));
+    };
+
+    const handleNext = () => {
+        if (viewMode === 'month') setCurrentMonth(addMonths(currentMonth, 1));
+        else setCurrentMonth(prev => new Date(prev.setDate(prev.getDate() + 7)));
+    };
 
     const handleAddClick = (date: Date) => {
         if (isMasterMode) return;
@@ -285,11 +303,29 @@ export default function GMDashboard() {
                         )}
 
                         {view !== 'teams' && (
-                            <div className="month-nav">
-                                <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="month-btn"><ChevronLeft size={20}/></button>
-                                <span className="month-label">{format(currentMonth, 'MMMM yyyy')}</span>
-                                <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="month-btn"><ChevronRight size={20}/></button>
-                            </div>
+                            <>
+                                <div className="view-mode-toggle">
+                                    <button 
+                                        onClick={() => setViewMode('month')}
+                                        className={`view-mode-btn ${viewMode === 'month' ? 'active' : ''}`}
+                                    >Month</button>
+                                    <button 
+                                        onClick={() => setViewMode('week')}
+                                        className={`view-mode-btn ${viewMode === 'week' ? 'active' : ''}`}
+                                    >Week</button>
+                                </div>
+
+                                <div className="month-nav">
+                                    <button onClick={handlePrev} className="month-btn"><ChevronLeft size={20}/></button>
+                                    <span className="month-label">
+                                        {viewMode === 'month' 
+                                            ? format(currentMonth, 'MMMM yyyy')
+                                            : `Week of ${format(startOfWeek(currentMonth, { weekStartsOn: 1 }), 'MMM d')}`
+                                        }
+                                    </span>
+                                    <button onClick={handleNext} className="month-btn"><ChevronRight size={20}/></button>
+                                </div>
+                            </>
                         )}
                     </div>
                 </header>
@@ -392,7 +428,7 @@ export default function GMDashboard() {
                     </div>
                 ) : (
                     <div className="calendar-card">
-                        <div className="calendar-grid">
+                        <div className="calendar-grid" style={{ gridTemplateRows: viewMode === 'week' ? 'auto 1fr' : 'repeat(6, 1fr)' }}>
                             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
                                 <div key={day} className="calendar-header-cell">{day}</div>
                             ))}
@@ -406,7 +442,8 @@ export default function GMDashboard() {
                                     <div 
                                         key={idx} 
                                         onClick={() => handleAddClick(day)}
-                                        className={`calendar-day ${!isSameMonth(day, currentMonth) ? 'other-month' : ''} ${isSameDay(day, new Date()) ? 'today' : ''}`}
+                                        className={`calendar-day ${viewMode === 'week' ? 'weekly-cell' : ''} ${!isSameMonth(day, currentMonth) && viewMode === 'month' ? 'other-month' : ''} ${isSameDay(day, new Date()) ? 'today' : ''}`}
+                                        style={{ minHeight: viewMode === 'week' ? '300px' : '110px' }}
                                     >
                                         <span className="day-number">{format(day, 'd')}</span>
                                         <div className="day-items">

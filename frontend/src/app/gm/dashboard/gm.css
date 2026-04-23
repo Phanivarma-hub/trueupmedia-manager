@@ -251,6 +251,40 @@
     box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 
+.view-mode-toggle {
+    display: flex;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 12px;
+    margin-right: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.view-mode-btn {
+    padding: 6px 16px;
+    border-radius: 9px;
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.view-mode-btn.active {
+    background: white;
+    color: #4f46e5;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.view-mode-btn:not(.active) {
+    background: transparent;
+    color: #64748b;
+}
+
+.view-mode-btn:not(.active):hover {
+    color: #1e293b;
+}
+
 .month-btn {
     padding: 8px;
     border-radius: 8px;
@@ -310,12 +344,19 @@
 }
 
 .calendar-day {
-    min-height: 110px;
+    min-height: 120px;
+    height: auto;
     padding: 8px;
     border-right: 1px solid #f1f5f9;
     border-bottom: 1px solid #f1f5f9;
     cursor: pointer;
     transition: background 0.15s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-day.weekly-cell {
+    min-height: 300px !important;
 }
 
 .calendar-day:hover {
@@ -363,6 +404,16 @@
     transition: all 0.15s ease;
     white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.content-item span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
 }
 
 .content-item.post {

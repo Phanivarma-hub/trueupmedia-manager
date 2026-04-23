@@ -4,14 +4,35 @@ const api = axios.create({
     baseURL: 'http://localhost:3001/api/gm',
 });
 
+export interface Client {
+    id: string;
+    company_name: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+    is_active?: boolean;
+    created_at: string;
+}
+
+export interface ContentItem {
+    id: string;
+    title: string;
+    description: string;
+    content_type: 'Post' | 'Reel';
+    scheduled_datetime: string;
+    status: string;
+    client_id: string;
+    clients?: { company_name: string };
+}
+
 export const gmApi = {
-    getClients: () => api.get('/clients'),
+    getClients: () => api.get<Client[]>('/clients'),
     getCalendar: (clientId: string, month: string) => api.get(`/calendar?client_id=${clientId}&month=${month}`),
     getMasterCalendar: (month: string, clientId?: string, contentType?: string) => 
-        api.get(`/master-calendar?month=${month}${clientId ? `&client_id=${clientId}` : ''}${contentType ? `&content_type=${contentType}` : ''}`),
-    getContentDetails: (id: string) => api.get(`/content/${id}`),
-    addContent: (data: any) => api.post('/content', data),
-    updateContent: (id: string, data: any) => api.put(`/content/${id}`, data),
+        api.get<ContentItem[]>(`/master-calendar?month=${month}${clientId ? `&client_id=${clientId}` : ''}${contentType ? `&content_type=${contentType}` : ''}`),
+    getContentDetails: (id: string) => api.get<{ item: ContentItem, history: any[] }>(`/content/${id}`),
+    addContent: (data: Partial<ContentItem>) => api.post('/content', data),
+    updateContent: (id: string, data: Partial<ContentItem>) => api.put(`/content/${id}`, data),
     deleteContent: (id: string) => api.delete(`/content/${id}`),
     updateStatus: (id: string, new_status: string) => api.patch(`/content/${id}/status`, { new_status }),
     getTeamLeads: () => api.get('/team-leads'),
@@ -23,14 +44,22 @@ const adminBase = axios.create({
     baseURL: 'http://localhost:3001/api/admin',
 });
 
+export interface TeamMember {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+}
+
 export const adminApi = {
-    getClients: () => adminBase.get('/clients'),
-    addClient: (data: any) => adminBase.post('/clients', data),
-    updateClient: (id: string, data: any) => adminBase.put(`/clients/${id}`, data),
+    getClients: () => adminBase.get<Client[]>('/clients'),
+    addClient: (data: Partial<Client>) => adminBase.post('/clients', data),
+    updateClient: (id: string, data: Partial<Client>) => adminBase.put(`/clients/${id}`, data),
     deleteClient: (id: string) => adminBase.delete(`/clients/${id}`),
     getStats: () => adminBase.get('/stats'),
-    getTeam: () => adminBase.get('/team'),
-    addTeamMember: (data: any) => adminBase.post('/team', data),
+    getTeam: () => adminBase.get<TeamMember[]>('/team'),
+    addTeamMember: (data: Partial<TeamMember>) => adminBase.post('/team', data),
+    updateTeamMember: (id: string, data: any) => adminBase.put(`/team/${id}`, data),
     deleteTeamMember: (id: string) => adminBase.delete(`/team/${id}`),
 };
 
