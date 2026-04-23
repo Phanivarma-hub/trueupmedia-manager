@@ -184,7 +184,7 @@ export default function TLDashboard() {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
-        window.location.href = '/login';
+        window.location.href = '/';
     };
 
     const days = eachDayOfInterval({
