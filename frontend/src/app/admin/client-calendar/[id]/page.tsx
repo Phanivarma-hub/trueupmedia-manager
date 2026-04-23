@@ -133,53 +133,43 @@ export default function ClientCalendarPage() {
     return (
         <div>
             <header className="page-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <button onClick={() => router.back()} className="btn-icon">
-                        <ArrowLeft size={18} />
-                    </button>
-                    <div>
-                        <h1 className="page-title">{client?.company_name} Calendar</h1>
-                        <p className="page-subtitle">Manage scheduling and content for this client</p>
-                    </div>
-                </div>
-
-                <div className="header-controls">
-                    <div style={{ display: 'flex', background: 'var(--bg-elevated)', padding: '4px', borderRadius: '10px', marginRight: '8px' }}>
-                        <button 
-                            onClick={() => setViewMode('month')}
-                            style={{ 
-                                padding: '6px 12px', borderRadius: '8px', border: 'none', fontSize: '12px', fontWeight: 700,
-                                background: viewMode === 'month' ? 'var(--bg-hover)' : 'transparent',
-                                color: viewMode === 'month' ? 'var(--accent)' : 'var(--text-muted)',
-                                boxShadow: viewMode === 'month' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
-                                cursor: 'pointer'
-                            }}
-                        >Month</button>
-                        <button 
-                            onClick={() => setViewMode('week')}
-                            style={{ 
-                                padding: '6px 12px', borderRadius: '8px', border: 'none', fontSize: '12px', fontWeight: 700,
-                                background: viewMode === 'week' ? 'var(--bg-hover)' : 'transparent',
-                                color: viewMode === 'week' ? 'var(--accent)' : 'var(--text-muted)',
-                                boxShadow: viewMode === 'week' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
-                                cursor: 'pointer'
-                            }}
-                        >Week</button>
+                <div className="header-content">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <button onClick={() => router.back()} className="btn-icon">
+                            <ArrowLeft size={18} />
+                        </button>
+                        <div className="header-info">
+                            <h1 className="page-title">{client?.company_name} Calendar</h1>
+                            <p className="page-subtitle">Manage scheduling and content for this client</p>
+                        </div>
                     </div>
 
-                    <div className="month-nav">
-                        <button onClick={handlePrev} className="month-btn">
-                            <ChevronLeft size={20}/>
-                        </button>
-                        <span className="month-label">
-                            {viewMode === 'month' 
-                                ? format(currentMonth, 'MMMM yyyy')
-                                : `Week of ${format(startOfWeek(currentMonth, { weekStartsOn: 1 }), 'MMM d')}`
-                            }
-                        </span>
-                        <button onClick={handleNext} className="month-btn">
-                            <ChevronRight size={20}/>
-                        </button>
+                    <div className="header-controls">
+                        <div className="view-mode-toggle">
+                            <button 
+                                onClick={() => setViewMode('month')}
+                                className={`view-mode-btn ${viewMode === 'month' ? 'active' : ''}`}
+                            >Month</button>
+                            <button 
+                                onClick={() => setViewMode('week')}
+                                className={`view-mode-btn ${viewMode === 'week' ? 'active' : ''}`}
+                            >Week</button>
+                        </div>
+
+                        <div className="month-nav">
+                            <button onClick={handlePrev} className="month-btn">
+                                <ChevronLeft size={20}/>
+                            </button>
+                            <span className="month-label">
+                                {viewMode === 'month' 
+                                    ? format(currentMonth, 'MMMM yyyy')
+                                    : `Week of ${format(startOfWeek(currentMonth, { weekStartsOn: 1 }), 'MMM d')}`
+                                }
+                            </span>
+                            <button onClick={handleNext} className="month-btn">
+                                <ChevronRight size={20}/>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>

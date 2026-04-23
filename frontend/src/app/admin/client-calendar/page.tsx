@@ -31,9 +31,11 @@ export default function ClientCalendarsList() {
   return (
     <div>
       <header className="page-header">
-        <div>
-          <h1 className="page-title">Client Calendars</h1>
-          <p className="page-subtitle">Access and manage individual content schedules for each client</p>
+        <div className="header-content">
+          <div>
+            <h1 className="page-title">Client Calendars</h1>
+            <p className="page-subtitle">Access and manage individual content schedules for each client</p>
+          </div>
         </div>
       </header>
 

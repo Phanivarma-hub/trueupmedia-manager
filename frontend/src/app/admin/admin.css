@@ -170,6 +170,19 @@
     margin-bottom: 32px;
 }
 
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 20px;
+}
+
+.header-info {
+    flex: 1;
+    min-width: 0;
+}
+
 .page-title {
     font-size: 28px;
     font-weight: 800;
@@ -869,9 +882,13 @@
     }
 
     .page-header {
+        margin-bottom: 24px !important;
+    }
+
+    .header-content {
         flex-direction: column !important;
         align-items: flex-start !important;
-        gap: 20px !important;
+        gap: 16px !important;
     }
 
     .header-controls {
