@@ -205,27 +205,22 @@ export default function ClientCalendarPage() {
                             <div 
                                 key={idx} 
                                 onClick={() => {
-<<<<<<< HEAD
                                     if (dayContent.length > 0) {
                                         if (window.innerWidth <= 768) {
                                             setDailyAgenda({ date: day, items: dayContent });
                                         } else {
                                             handleItemClick(dayContent[0]);
                                         }
+                                    } else {
+                                        setFormData({
+                                            ...formData,
+                                            scheduled_datetime: format(day, "yyyy-MM-dd") + 'T10:00'
+                                        });
+                                        setShowAddModal(true);
                                     }
                                 }}
                                 className={`calendar-day ${viewMode === 'week' ? 'weekly-cell' : ''} ${!isSameMonth(day, currentMonth) && viewMode === 'month' ? 'other-month' : ''} ${isSameDay(day, new Date()) ? 'today' : ''}`}
-                                style={{ minHeight: viewMode === 'week' ? '300px' : '110px', cursor: dayContent.length > 0 ? 'pointer' : 'default' }}
-=======
-                                    setFormData({
-                                        ...formData,
-                                        scheduled_datetime: format(day, "yyyy-MM-dd") + 'T10:00'
-                                    });
-                                    setShowAddModal(true);
-                                }}
-                                className={`calendar-day ${viewMode === 'week' ? 'weekly-cell' : ''} ${!isSameMonth(day, currentMonth) && viewMode === 'month' ? 'other-month' : ''} ${isSameDay(day, new Date()) ? 'today' : ''}`}
                                 style={{ minHeight: viewMode === 'week' ? '300px' : '110px', cursor: 'pointer' }}
->>>>>>> 7db132e41fb18ffcc1b14ad7525a2b5882605396
                             >
                                 <span className="day-number">{format(day, 'd')}</span>
                                 <div className="day-items desktop-only">
@@ -274,16 +269,16 @@ export default function ClientCalendarPage() {
                                     }}
                                     style={{ 
                                         padding: '12px', borderRadius: '10px', 
-                                        background: '#f8fafc', border: '1px solid #e2e8f0',
+                                        background: 'var(--bg-elevated)', border: '1px solid var(--border)',
                                         display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer'
                                     }}
                                 >
                                     <div style={{ 
                                         width: '4px', height: '24px', borderRadius: '2px', 
-                                        background: item.content_type === 'Post' ? '#10b981' : '#facc15' 
+                                        background: item.content_type === 'Post' ? '#10b981' : '#6366f1' 
                                     }}></div>
                                     <div style={{ flex: 1 }}>
-                                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#1e293b' }}>{item.title}</p>
+                                        <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>{item.title}</p>
                                     </div>
                                 </div>
                             ))}
