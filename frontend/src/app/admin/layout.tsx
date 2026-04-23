@@ -11,6 +11,7 @@ import {
     LogOut,
     UserCircle
 } from 'lucide-react';
+import ThemeToggle from '@/components/ThemeToggle';
 import './admin.css';
 
 export default function AdminLayout({
@@ -44,7 +45,7 @@ export default function AdminLayout({
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-primary)' }}>
         <div className="loading-spinner">Loading...</div>
       </div>
     );
@@ -63,7 +64,7 @@ export default function AdminLayout({
       <aside className="sidebar">
         <div className="logo-container">
           <img src="/logo.png" alt="TrueUp Media" className="logo-img" />
-          <span style={{ marginLeft: '4px', color: '#94a3b8', fontSize: '12px', fontWeight: 600 }}>Admin</span>
+          <span style={{ marginLeft: '4px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600 }}>Admin</span>
         </div>
 
         <nav style={{ flex: 1 }}>
@@ -81,6 +82,10 @@ export default function AdminLayout({
         </nav>
 
         <div className="sidebar-footer">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <p className="sidebar-label" style={{ margin: 0 }}>Appearance</p>
+            <ThemeToggle style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
+          </div>
           <div className="user-info-box">
             <div className="user-avatar">
               <UserCircle size={24} />

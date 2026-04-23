@@ -2,13 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { adminApi } from '@/lib/api';
-import { Plus, Search, Trash2, X, UserCheck, Shield, Key, Edit2 } from 'lucide-react';
+import { Plus, Search, Trash2, X, Key, Edit2 } from 'lucide-react';
 
 interface TeamMember {
-  user_id: string;
+  id: string;
   name: string;
   email: string;
-  role: 'TL1' | 'TL2' | 'TEAM LEAD';
+  role: string;
   role_identifier?: string;
   created_at: string;
 }
@@ -25,7 +25,7 @@ export default function TeamManagement() {
     name: '',
     email: '',
     password: '',
-    role: 'TEAM LEAD' as 'TL1' | 'TL2' | 'TEAM LEAD',
+    role: 'TEAM LEAD',
     role_identifier: 'TL1',
   });
 
@@ -81,7 +81,7 @@ export default function TeamManagement() {
         // Password is optional during edit
         const updatePayload = { ...formData };
         if (!updatePayload.password) delete (updatePayload as any).password;
-        await adminApi.updateTeamMember(editingMember.user_id, updatePayload);
+        await adminApi.updateTeamMember(editingMember.id, updatePayload);
       } else {
         await adminApi.addTeamMember(formData);
       }
@@ -128,7 +128,7 @@ export default function TeamManagement() {
         {loading && team.length === 0 ? (
           <div className="loading-bar">Loading team data...</div>
         ) : error ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#ef4444' }}>{error}</div>
+          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--danger)' }}>{error}</div>
         ) : (
           <table className="admin-table">
             <thead>
@@ -142,8 +142,8 @@ export default function TeamManagement() {
             </thead>
             <tbody>
               {filteredTeam.map((member) => (
-                <tr key={member.user_id}>
-                  <td style={{ fontWeight: 700, color: '#0f172a' }}>
+                <tr key={member.id}>
+                  <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <div className="user-avatar" style={{ width: '32px', height: '32px', fontSize: '12px' }}>
                         {member.name.charAt(0)}
@@ -154,11 +154,11 @@ export default function TeamManagement() {
                   <td>{member.email}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      <span className="type-badge" style={{ background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0', minWidth: '100px', textAlign: 'center' }}>
+                      <span className="type-badge" style={{ background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', minWidth: '100px', textAlign: 'center' }}>
                         TEAM LEAD
                       </span>
                       {member.role_identifier && (
-                        <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 600 }}>
                           {member.role_identifier}
                         </span>
                       )}
@@ -170,7 +170,7 @@ export default function TeamManagement() {
                       <button className="btn-icon" onClick={() => handleEditClick(member)}>
                         <Edit2 size={14} />
                       </button>
-                      <button className="btn-icon delete" onClick={() => handleDeleteClick(member.user_id, member.name)}>
+                      <button className="btn-icon delete" onClick={() => handleDeleteClick(member.id, member.name)}>
                         <Trash2 size={14} />
                       </button>
                     </div>
@@ -179,7 +179,7 @@ export default function TeamManagement() {
               ))}
               {filteredTeam.length === 0 && (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontStyle: 'italic' }}>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                     No team members found.
                   </td>
                 </tr>
@@ -235,7 +235,7 @@ export default function TeamManagement() {
                     placeholder={editingMember ? "Leave blank to keep current" : "Minimum 6 characters"}
                     style={{ width: '100%' }}
                   />
-                  <Key size={14} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: '#cbd5e1' }} />
+                  <Key size={14} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 </div>
               </div>
               <div className="form-group">
@@ -250,9 +250,9 @@ export default function TeamManagement() {
                     placeholder="e.g. TL1, TL2, TL3"
                     style={{ width: '100%' }}
                   />
-                  <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: '#64748b', fontSize: '11px', fontWeight: 600 }}>ID</div>
+                  <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '11px', fontWeight: 600 }}>ID</div>
                 </div>
-                <p style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>Role will be set to TEAM LEAD automatically.</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>Role will be set to TEAM LEAD automatically.</p>
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>

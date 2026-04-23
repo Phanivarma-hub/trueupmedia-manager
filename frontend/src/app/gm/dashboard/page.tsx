@@ -35,6 +35,7 @@ import {
 import { gmApi } from '@/lib/api';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
+import ThemeToggle from '@/components/ThemeToggle';
 import './gm.css';
 
 // Matches actual DB: content_items has id, client_id, title, scheduled_datetime, status, content_type, description
@@ -228,7 +229,7 @@ export default function GMDashboard() {
             <aside className="sidebar">
                 <div className="logo-container">
                     <img src="/logo.png" alt="TrueUp Media" className="logo-img" />
-                    <span style={{ marginLeft: '4px', color: '#94a3b8', fontSize: '12px', fontWeight: 600 }}>GM</span>
+                    <span style={{ marginLeft: '4px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600 }}>GM</span>
                 </div>
 
                 <nav className="flex-1">
@@ -260,7 +261,7 @@ export default function GMDashboard() {
                             <p className="sidebar-label">Clients</p>
                             <div className="client-list">
                                 {clients.length === 0 && (
-                                    <p style={{ fontSize: 12, color: '#94a3b8', padding: '8px 12px' }}>No clients found</p>
+                                    <p style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 12px' }}>No clients found</p>
                                 )}
                                 {clients.map(c => (
                                     <div 
@@ -280,10 +281,12 @@ export default function GMDashboard() {
                 </nav>
 
                 <div className="sidebar-footer">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div className="user-avatar">
-                            <Users size={20} />
-                        </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <p className="sidebar-label" style={{ margin: 0 }}>Appearance</p>
+                        <ThemeToggle style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
+                    </div>
+                    <div className="user-info-box">
+                        <div className="user-avatar" style={{ background: 'var(--accent)', color: 'white' }}>GM</div>
                         <div>
                             <p className="user-name">General Manager</p>
                             <p className="user-role">TrueUp Media</p>
@@ -325,8 +328,8 @@ export default function GMDashboard() {
                         )}
 
                         {view === 'master' && (
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', background: '#f8fafc', padding: '4px', borderRadius: '14px', border: '1px solid #e2e8f0', marginRight: '8px' }}>
-                                <div style={{ padding: '0 8px', color: '#94a3b8' }}>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', background: 'var(--bg-elevated)', padding: '4px', borderRadius: '14px', border: '1px solid var(--border)', marginRight: '8px' }}>
+                                <div style={{ padding: '0 8px', color: 'var(--text-muted)' }}>
                                     <Filter size={14} />
                                 </div>
                                 <div className="client-dropdown-wrapper">
@@ -343,7 +346,7 @@ export default function GMDashboard() {
                                     </select>
                                     <ChevronDown size={14} className="dropdown-chevron" />
                                 </div>
-                                <div style={{ width: '1px', height: '20px', background: '#e2e8f0' }}></div>
+                                <div style={{ width: '1px', height: '20px', background: 'var(--border)' }}></div>
                                 <div className="client-dropdown-wrapper">
                                     <select
                                         className="client-dropdown"
@@ -408,7 +411,7 @@ export default function GMDashboard() {
                                                 <div>
                                                     <h3 className="lead-name">
                                                         {lead.name} 
-                                                        {lead.role_identifier && <span style={{ marginLeft: '8px', fontSize: '12px', color: '#64748b', fontWeight: 500 }}>({lead.role_identifier})</span>}
+                                                        {lead.role_identifier && <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>({lead.role_identifier})</span>}
                                                     </h3>
                                                     <p className="lead-role">TEAM LEAD</p>
                                                 </div>
@@ -476,7 +479,7 @@ export default function GMDashboard() {
                                                 ))}
                                             </select>
                                         </div>
-                                        <p style={{ fontSize: 12, color: '#64748b' }}>
+                                        <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                                             Only showing clients not currently assigned to any team lead.
                                         </p>
                                     </div>
