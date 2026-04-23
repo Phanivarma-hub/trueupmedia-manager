@@ -32,6 +32,7 @@ import {
     Search,
     LogOut
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { tlApi, gmApi } from '@/lib/api';
 import { createClient } from '@/utils/supabase/client';
 import '../../admin/admin.css'; // Using Admin Panel UI styles
@@ -50,6 +51,7 @@ interface ContentItem {
 
 export default function TLDashboard() {
     const supabase = createClient();
+    const router = useRouter();
     const [user, setUser] = useState<any>(null);
     const [profile, setProfile] = useState<any>(null);
     const [clients, setClients] = useState<any[]>([]);
@@ -184,7 +186,7 @@ export default function TLDashboard() {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
-        window.location.href = '/';
+        router.push('/');
     };
 
     const days = eachDayOfInterval({
