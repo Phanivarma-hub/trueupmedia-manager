@@ -251,8 +251,8 @@ export default function TLDashboard() {
                                             width: '24px', 
                                             height: '24px', 
                                             borderRadius: '6px', 
-                                            background: selectedClient === c.id ? '#4f46e5' : '#f1f5f9',
-                                            color: selectedClient === c.id ? 'white' : '#64748b',
+                                            background: selectedClient === c.id ? 'var(--accent)' : 'var(--bg-elevated)',
+                                            color: selectedClient === c.id ? 'white' : 'var(--text-secondary)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
@@ -364,8 +364,8 @@ export default function TLDashboard() {
                                     <span className={`type-badge ${activeItem.item.content_type.toLowerCase()}`}>
                                         {activeItem.item.content_type}
                                     </span>
-                                    <span style={{ fontSize: '12px', color: '#94a3b8' }}>•</span>
-                                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>{activeItem.item.clients?.company_name}</span>
+                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>•</span>
+                                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>{activeItem.item.clients?.company_name}</span>
                                 </div>
                                 <h3 className="modal-title">{activeItem.item.title}</h3>
                             </div>
@@ -381,22 +381,22 @@ export default function TLDashboard() {
                                 <div style={{ display: 'flex', gap: '24px' }}>
                                     <div>
                                         <label className="detail-label">Scheduled Date</label>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: '#1e293b', fontWeight: 600 }}>
-                                            <CalendarIcon size={14} color="#94a3b8"/>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>
+                                            <CalendarIcon size={14} color="var(--text-muted)"/>
                                             {format(parseISO(activeItem.item.scheduled_datetime), 'MMM d, yyyy')}
                                         </div>
                                     </div>
                                     <div>
                                         <label className="detail-label">Time</label>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: '#1e293b', fontWeight: 600 }}>
-                                            <Clock size={14} color="#94a3b8"/>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>
+                                            <Clock size={14} color="var(--text-muted)"/>
                                             {format(parseISO(activeItem.item.scheduled_datetime), 'hh:mm a')}
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="detail-workflow" style={{ background: '#f8fafc', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                            <div className="detail-workflow" style={{ background: 'var(--bg-elevated)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border)' }}>
                                 <label className="detail-label">Workflow Progress</label>
                                 <div style={{ marginTop: '16px' }}>
                                     {(() => {
@@ -411,8 +411,8 @@ export default function TLDashboard() {
                                         return (
                                             <>
                                                 <div style={{ marginBottom: '20px' }}>
-                                                    <p style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>Current Status</p>
-                                                    <p style={{ fontSize: '18px', fontWeight: 800, color: '#4f46e5' }}>{activeItem.item.status}</p>
+                                                    <p style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Current Status</p>
+                                                    <p style={{ fontSize: '18px', fontWeight: 800, color: 'var(--accent)' }}>{activeItem.item.status}</p>
                                                 </div>
                                                 {nextStatus && (
                                                     <div style={{ marginBottom: '16px' }}>
@@ -429,7 +429,7 @@ export default function TLDashboard() {
                                                                 fontSize: '13px',
                                                                 resize: 'none',
                                                                 height: '80px',
-                                                                background: 'white'
+                                                                background: 'var(--bg-surface)'
                                                             }}
                                                         />
                                                     </div>
