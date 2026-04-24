@@ -11,12 +11,15 @@ app.use(compression());
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'http://localhost:3000',
-  'https://trueupmedia-manager.onrender.com'
+  'http://localhost:3001',
+  'http://localhost:3002'
 ].filter(Boolean);
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || origin.includes('onrender.com')) {
+    // If FRONTEND_URL is not set, allow all for now to unblock the deployment.
+    // If it is set, enforce the origin check.
+    if (!process.env.FRONTEND_URL || !origin || allowedOrigins.includes(origin) || origin.includes('onrender.com')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
