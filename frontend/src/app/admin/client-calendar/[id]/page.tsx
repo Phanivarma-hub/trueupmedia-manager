@@ -368,7 +368,7 @@ export default function ClientCalendarPage() {
                                 <select 
                                     className="form-input"
                                     value={formData.content_type}
-                                    onChange={(e) => setFormData({...formData, content_type: e.target.value})}
+                                    onChange={(e) => setFormData({...formData, content_type: e.target.value as 'Post' | 'Reel'})}
                                 >
                                     <option value="Post">Post</option>
                                     <option value="Reel">Reel</option>
