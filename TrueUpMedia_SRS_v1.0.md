@@ -18,7 +18,7 @@ Admin & General Manager Access
   **Prepared For**             TrueUp Media Pvt. Ltd.
 
   **Module**                   Schedule Tracker (Phase 1)
-  ---------------------------- ------------------------------------------
+  ---------------------------- -----------------------------------------
 
 **1. Introduction**
 
