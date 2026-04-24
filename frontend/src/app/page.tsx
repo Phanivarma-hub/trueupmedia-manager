@@ -82,8 +82,8 @@ export default function Login() {
         return;
       }
 
-      // Persist user for dashboard use
-      localStorage.setItem('user', JSON.stringify(data.user));
+      // Security: Do not store token/user data in localStorage
+      // Supabase handles session securely via cookies/session storage
 
       // Redirect to the role's dashboard
       window.location.href = `/${selectedRole}/dashboard`;
@@ -172,6 +172,9 @@ export default function Login() {
                   placeholder="name@trueupmedia.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  maxLength={100}
+                  pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
+                  title="Please enter a valid email address"
                   required 
                 />
               </div>
@@ -188,6 +191,7 @@ export default function Login() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  maxLength={128}
                   required 
                 />
               </div>

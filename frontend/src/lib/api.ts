@@ -1,7 +1,20 @@
 import axios from 'axios';
+import { createClient } from '@/utils/supabase/client';
+
+const supabase = createClient();
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 const api = axios.create({
-    baseURL: 'http://localhost:3001/api/gm',
+    baseURL: `${API_BASE_URL}/api/gm`,
+});
+
+api.interceptors.request.use(async (config) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+        config.headers.Authorization = `Bearer ${session.access_token}`;
+    }
+    return config;
 });
 
 export interface Client {
@@ -42,7 +55,15 @@ export const gmApi = {
 };
 
 const adminBase = axios.create({
-    baseURL: 'http://localhost:3001/api/admin',
+    baseURL: `${API_BASE_URL}/api/admin`,
+});
+
+adminBase.interceptors.request.use(async (config) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+        config.headers.Authorization = `Bearer ${session.access_token}`;
+    }
+    return config;
 });
 
 export interface TeamMember {
@@ -67,7 +88,15 @@ export const adminApi = {
 };
 
 const tlBase = axios.create({
-    baseURL: 'http://localhost:3001/api/tl',
+    baseURL: `${API_BASE_URL}/api/tl`,
+});
+
+tlBase.interceptors.request.use(async (config) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+        config.headers.Authorization = `Bearer ${session.access_token}`;
+    }
+    return config;
 });
 
 export const tlApi = {

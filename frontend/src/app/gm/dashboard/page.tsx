@@ -93,8 +93,11 @@ export default function GMDashboard() {
 
     useEffect(() => {
         fetchClients();
-        const savedUser = localStorage.getItem('user');
-        if (savedUser) setUser(JSON.parse(savedUser));
+        const fetchUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) setUser(user);
+        };
+        fetchUser();
     }, []);
 
     useEffect(() => {
