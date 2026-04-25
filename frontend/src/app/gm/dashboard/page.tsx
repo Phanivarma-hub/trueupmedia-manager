@@ -312,8 +312,8 @@ export default function GMDashboard() {
             <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
                 <div className="logo-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <img src="/logo.png" alt="TrueUp Media" className="logo-img" />
-                        <span style={{ marginLeft: '4px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600 }}>GM</span>
+                        <span style={{ color: 'var(--accent)', fontSize: '18px', fontWeight: 800, letterSpacing: '-0.5px' }}>TrueUp</span>
+                        <span style={{ marginLeft: '6px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600, marginTop: '2px' }}>GM</span>
                     </div>
                     <button onClick={() => setIsSidebarOpen(false)} className="sidebar-close" style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
                         <X size={24} />
@@ -410,7 +410,7 @@ export default function GMDashboard() {
                     <div className="menu-toggle" onClick={() => setIsSidebarOpen(true)}>
                         <Menu size={24} />
                     </div>
-                    <img src="/logo.png" alt="TrueUp Media" className="mobile-logo-img" />
+                    <span style={{ color: 'var(--accent)', fontSize: '16px', fontWeight: 800 }}>TrueUp</span>
                     <div style={{ width: '40px' }}></div> {/* Spacer */}
                 </div>
 

@@ -35,8 +35,8 @@ export default function COODashboard() {
             {/* Sidebar */}
             <aside className="sidebar">
                 <div className="logo-container">
-                    <img src="/logo.png" alt="TrueUp Media" className="logo-img" />
-                    <span style={{ marginLeft: '4px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600 }}>COO</span>
+                    <span style={{ color: 'var(--accent)', fontSize: '18px', fontWeight: 800, letterSpacing: '-0.5px' }}>TrueUp</span>
+                    <span style={{ marginLeft: '6px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600, marginTop: '2px' }}>COO</span>
                 </div>
 
                 <nav className="flex-1">

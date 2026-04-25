@@ -81,8 +81,8 @@ export default function AdminLayout({
 
       <aside className={`sidebar ${sidebarOpen ? 'mobile-open' : ''}`}>
         <div className="logo-container">
-          <img src="/logo.png" alt="TrueUp Media" className="logo-img" />
-          <span style={{ marginLeft: '4px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600 }}>Admin</span>
+          <span style={{ color: 'var(--accent)', fontSize: '18px', fontWeight: 800, letterSpacing: '-0.5px' }}>TrueUp</span>
+          <span style={{ marginLeft: '6px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600, marginTop: '2px' }}>Admin</span>
           <button 
             className="sidebar-close" 
             onClick={() => setSidebarOpen(false)}
