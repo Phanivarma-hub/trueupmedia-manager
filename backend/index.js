@@ -909,7 +909,7 @@ app.post('/api/notifications/send', async (req, res) => {
         }
 
         if (senderRole === 'General Manager' || senderRole === 'GM') {
-            const allowedRoles = ['Team Lead 1', 'Team Lead 2', 'Posting Team', 'TL1', 'TL2'];
+            const allowedRoles = ['TEAM LEAD', 'POSTING_TEAM'];
             if (target.type === 'ROLE' && !allowedRoles.includes(target.value)) {
                 return res.status(403).json({ error: 'GM can only send to specific roles' });
             }
