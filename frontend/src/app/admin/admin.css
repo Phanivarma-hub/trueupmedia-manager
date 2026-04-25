@@ -159,7 +159,7 @@
 .main-content {
     flex: 1;
     margin-left: 260px;
-    padding: 32px 40px;
+    padding: 24px 32px;
 }
 
 /* ─── Page Header ─── */
@@ -562,6 +562,16 @@
     border-bottom: 1px solid var(--border);
     font-size: 13px;
     color: var(--text-secondary);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-table td:last-child, .admin-table th:last-child {
+    max-width: none;
+    width: 140px;
+    text-align: right;
 }
 
 @media (max-width: 768px) {
