@@ -175,6 +175,8 @@ export default function GMDashboard() {
         statusBreakdown: {} as any
     });
 
+    const [todayStats, setTodayStats] = useState({ total: 0, completed: 0, percentage: 0, remaining: 0 });
+
     const fetchDashboardStats = async () => {
         setLoading(true);
         try {
@@ -186,6 +188,19 @@ export default function GMDashboard() {
                 acc[item.status] = (acc[item.status] || 0) + 1;
                 return acc;
             }, {});
+
+            // Calculate today's stats
+            const today = new Date();
+            const todayItems = data.filter(item => isSameDay(parseISO(item.scheduled_datetime), today));
+            const totalToday = todayItems.length;
+            const completedToday = todayItems.filter(item => item.status === 'POSTED').length;
+            
+            setTodayStats({
+                total: totalToday,
+                completed: completedToday,
+                remaining: totalToday - completedToday,
+                percentage: totalToday > 0 ? Math.round((completedToday / totalToday) * 100) : 0
+            });
 
             setStats({
                 totalClients: clients.length,
@@ -565,6 +580,33 @@ export default function GMDashboard() {
                         </div>
                     </div>
                 </header>
+
+                {view === 'dashboard' && (
+                    <div className="daily-stats-banner">
+                        <div className="progress-meter-card">
+                            <div className="progress-info">
+                                <h3 className="stat-label">Today's Progress</h3>
+                                <div className="progress-values">
+                                    <span className="current">{todayStats.completed}</span>
+                                    <span className="separator">/</span>
+                                    <span className="total">{todayStats.total}</span>
+                                    <span className="unit"> Tasks Posted</span>
+                                </div>
+                            </div>
+                            <div className="meter-container">
+                                <div className="meter-bar">
+                                    <div className="meter-fill" style={{ width: `${todayStats.percentage}%` }}>
+                                        <div className="meter-glow"></div>
+                                    </div>
+                                </div>
+                                <div className="meter-label">
+                                    <span className="meter-percentage">{todayStats.percentage}% Complete</span>
+                                    <span>{todayStats.remaining} tasks remaining today</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Removed global loading bar in favor of inline skeletons */}
 

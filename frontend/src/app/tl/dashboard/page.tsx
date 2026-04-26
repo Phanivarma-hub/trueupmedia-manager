@@ -63,8 +63,26 @@ export default function TLDashboard() {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [calendarData, setCalendarData] = useState<ContentItem[]>([]);
     const [loading, setLoading] = useState(true);
-    const [view, setView] = useState<'client' | 'master'>('client');
+    const [view, setView] = useState<'dashboard' | 'client' | 'master'>('dashboard');
     const [searchQuery, setSearchQuery] = useState('');
+    const [todayStats, setTodayStats] = useState({ total: 0, completed: 0, percentage: 0, remaining: 0 });
+
+    useEffect(() => {
+        if (calendarData.length > 0) {
+            const today = new Date();
+            const todayItems = calendarData.filter(item => isSameDay(parseISO(item.scheduled_datetime), today));
+            const totalToday = todayItems.length;
+            const completedToday = todayItems.filter(item => item.status === 'POSTED').length;
+            setTodayStats({
+                total: totalToday,
+                completed: completedToday,
+                remaining: totalToday - completedToday,
+                percentage: totalToday > 0 ? Math.round((completedToday / totalToday) * 100) : 0
+            });
+        } else {
+            setTodayStats({ total: 0, completed: 0, percentage: 0, remaining: 0 });
+        }
+    }, [calendarData]);
 
     
     // Details modal state
@@ -115,7 +133,7 @@ export default function TLDashboard() {
 
     useEffect(() => {
         if (user) {
-            if (view === 'master') {
+            if (view === 'master' || view === 'dashboard') {
                 fetchMasterCalendar();
             } else if (view === 'client' && selectedClient) {
                 fetchClientCalendar();
@@ -228,17 +246,24 @@ export default function TLDashboard() {
                 <nav className="flex-1">
                     <p className="sidebar-label">Navigation</p>
                     <div 
+                        onClick={() => setView('dashboard')}
+                        className={`nav-item ${view === 'dashboard' ? 'active' : ''}`}
+                    >
+                        <LayoutDashboard size={18} />
+                        <span>Dashboard Overview</span>
+                    </div>
+                    <div 
                         onClick={() => setView('client')}
                         className={`nav-item ${view === 'client' ? 'active' : ''}`}
                     >
-                        <LayoutDashboard size={18} />
-                        <span>Client Dashboards</span>
+                        <Globe size={18} />
+                        <span>Client Calendars</span>
                     </div>
                     <div 
                         onClick={() => setView('master')}
                         className={`nav-item ${view === 'master' ? 'active' : ''}`}
                     >
-                        <Globe size={18} />
+                        <CalendarIcon size={18} />
                         <span>Master Calendar</span>
                     </div>
 
@@ -352,62 +377,148 @@ export default function TLDashboard() {
                     </div>
                 </header>
 
-                {/* Global loading bar removed in favor of inline skeletons */}
-
-                <div className="calendar-card">
-                    <div className="calendar-grid">
-                        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                            <div key={day} className="calendar-header-cell">{day}</div>
-                        ))}
-
-                        {loading ? (
-                            <>
-                                {Array.from({ length: 35 }).map((_, idx) => (
-                                    <div key={idx} className="calendar-day opacity-50" style={{ minHeight: '110px' }}>
-                                        <Skeleton className="h-4 w-4 mb-2" />
-                                        <div className="space-y-1">
-                                            <Skeleton className="h-6 w-full rounded" />
-                                            <Skeleton className="h-6 w-3/4 rounded" />
-                                        </div>
+                {view === 'dashboard' && (
+                    <div className="daily-stats-banner">
+                        <div className="progress-meter-card">
+                            <div className="progress-info">
+                                <h3 className="stat-label">Today's Progress</h3>
+                                <div className="progress-values">
+                                    <span className="current">{todayStats.completed}</span>
+                                    <span className="separator">/</span>
+                                    <span className="total">{todayStats.total}</span>
+                                    <span className="unit"> Tasks Posted</span>
+                                </div>
+                            </div>
+                            <div className="meter-container">
+                                <div className="meter-bar">
+                                    <div className="meter-fill" style={{ width: `${todayStats.percentage}%` }}>
+                                        <div className="meter-glow"></div>
                                     </div>
-                                ))}
-                            </>
-                        ) : (
-                            <>
-                                {days.map((day, idx) => {
-                                    const dayContent = calendarData.filter(item => {
-                                        const itemDate = parseISO(item.scheduled_datetime);
-                                        return isSameDay(itemDate, day);
-                                    });
-                                    return (
-                                        <div 
-                                            key={idx} 
-                                            className={`calendar-day ${!isSameMonth(day, currentMonth) ? 'other-month' : ''} ${isSameDay(day, new Date()) ? 'today' : ''}`}
-                                        >
-                                            <span className="day-number">{format(day, 'd')}</span>
-                                            <div className="day-items">
-                                                {dayContent.map(item => (
-                                                    <div 
-                                                        key={item.id}
-                                                        onClick={(e) => { e.stopPropagation(); handleItemClick(item); }}
-                                                        className={`content-item ${item.content_type.toLowerCase()}`}
-                                                        title={item.content_type}
-                                                    >
-                                                        {item.content_type === 'Post' ? <FileText size={10}/> : <Video size={10}/>}
-                                                        <span className="truncate" style={{ fontSize: '9px' }}>
-                                                            {view === 'master' ? `[${item.clients?.company_name?.substring(0,3)}] ` : ''}
-                                                            {item.content_type}
-                                                        </span>
-                                                    </div>
-                                                ))}
+                                </div>
+                                <div className="meter-label">
+                                    <span className="meter-percentage">{todayStats.percentage}% Complete</span>
+                                    <span>{todayStats.remaining} tasks remaining today</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {view === 'dashboard' && (
+                    <div className="dashboard-view">
+                        <div className="stats-grid">
+                            <div className="stat-card">
+                                <div className="stat-icon-box" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent)' }}>
+                                    <Users size={24} />
+                                </div>
+                                <div className="stat-info">
+                                    <h3>Managed Clients</h3>
+                                    <p className="stat-value">{clients.length}</p>
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-icon-box" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)' }}>
+                                    <CalendarIcon size={24} />
+                                </div>
+                                <div className="stat-info">
+                                    <h3>Total Monthly Content</h3>
+                                    <p className="stat-value">{calendarData.length}</p>
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-icon-box" style={{ background: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)' }}>
+                                    <Clock size={24} />
+                                </div>
+                                <div className="stat-info">
+                                    <h3>Today's Throughput</h3>
+                                    <p className="stat-value">{todayStats.total}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="dashboard-grid" style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px' }}>
+                            <div className="dashboard-card">
+                                <div className="card-header">
+                                    <h2 className="card-title">Recent Activity</h2>
+                                    <span className="card-badge">Live</span>
+                                </div>
+                                <div className="activity-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    {calendarData.slice(0, 5).map(item => (
+                                        <div key={item.id} onClick={() => handleItemClick(item)} style={{ padding: '12px', background: 'var(--bg-elevated)', borderRadius: '12px', border: '1px solid var(--border)', cursor: 'pointer' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                                <span style={{ fontWeight: 700, fontSize: '13px' }}>{item.title}</span>
+                                                <span className={`type-badge ${item.status.toLowerCase()}`}>{item.status}</span>
+                                            </div>
+                                            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                                                {format(parseISO(item.scheduled_datetime), 'MMM d, HH:mm')} • {item.clients?.company_name}
                                             </div>
                                         </div>
-                                    );
-                                })}
-                            </>
-                        )}
+                                    ))}
+                                    {calendarData.length === 0 && <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px', padding: '20px' }}>No content scheduled for this month</p>}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                )}
+
+                {/* Global loading bar removed in favor of inline skeletons */}
+
+                {view !== 'dashboard' && (
+                    <div className="calendar-card">
+                        <div className="calendar-grid">
+                            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                                <div key={day} className="calendar-header-cell">{day}</div>
+                            ))}
+
+                            {loading ? (
+                                <>
+                                    {Array.from({ length: 35 }).map((_, idx) => (
+                                        <div key={idx} className="calendar-day opacity-50" style={{ minHeight: '110px' }}>
+                                            <Skeleton className="h-4 w-4 mb-2" />
+                                            <div className="space-y-1">
+                                                <Skeleton className="h-6 w-full rounded" />
+                                                <Skeleton className="h-6 w-3/4 rounded" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </>
+                            ) : (
+                                <>
+                                    {days.map((day, idx) => {
+                                        const dayContent = calendarData.filter(item => {
+                                            const itemDate = parseISO(item.scheduled_datetime);
+                                            return isSameDay(itemDate, day);
+                                        });
+                                        return (
+                                            <div 
+                                                key={idx} 
+                                                className={`calendar-day ${!isSameMonth(day, currentMonth) ? 'other-month' : ''} ${isSameDay(day, new Date()) ? 'today' : ''}`}
+                                            >
+                                                <span className="day-number">{format(day, 'd')}</span>
+                                                <div className="day-items">
+                                                    {dayContent.map(item => (
+                                                        <div 
+                                                            key={item.id}
+                                                            onClick={(e) => { e.stopPropagation(); handleItemClick(item); }}
+                                                            className={`content-item ${item.content_type.toLowerCase()}`}
+                                                            title={item.content_type}
+                                                        >
+                                                            {item.content_type === 'Post' ? <FileText size={10}/> : <Video size={10}/>}
+                                                            <span className="truncate" style={{ fontSize: '9px' }}>
+                                                                {view === 'master' ? `[${item.clients?.company_name?.substring(0,3)}] ` : ''}
+                                                                {item.content_type}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
             </main>
 
             {/* Details Modal */}

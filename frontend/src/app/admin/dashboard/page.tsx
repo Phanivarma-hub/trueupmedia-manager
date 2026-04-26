@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { adminApi } from '@/lib/api';
 import { Users, Calendar, Activity } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { format, isSameDay, parseISO } from 'date-fns';
 
 interface Stats {
   totalClients: number;
@@ -13,6 +14,7 @@ interface Stats {
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [todayStats, setTodayStats] = useState({ total: 0, completed: 0, percentage: 0, remaining: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -21,6 +23,21 @@ export default function AdminDashboard() {
       try {
         const res = await adminApi.getStats();
         setStats(res.data);
+        
+        // Fetch master calendar for today's stats
+        const calendarRes = await adminApi.getMasterCalendar(format(new Date(), 'yyyy-MM'));
+        const data = calendarRes.data;
+        const today = new Date();
+        const todayItems = data.filter((item: any) => isSameDay(parseISO(item.scheduled_datetime), today));
+        const totalToday = todayItems.length;
+        const completedToday = todayItems.filter((item: any) => item.status === 'POSTED').length;
+        
+        setTodayStats({
+          total: totalToday,
+          completed: completedToday,
+          remaining: totalToday - completedToday,
+          percentage: totalToday > 0 ? Math.round((completedToday / totalToday) * 100) : 0
+        });
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -40,6 +57,31 @@ export default function AdminDashboard() {
           <p className="page-subtitle">Overview of system activity and client pipelines</p>
         </div>
       </header>
+
+      <div className="daily-stats-banner">
+        <div className="progress-meter-card">
+          <div className="progress-info">
+            <h3 className="stat-label">Today's Progress</h3>
+            <div className="progress-values">
+              <span className="current">{todayStats.completed}</span>
+              <span className="separator">/</span>
+              <span className="total">{todayStats.total}</span>
+              <span className="unit"> Tasks Posted</span>
+            </div>
+          </div>
+          <div className="meter-container">
+            <div className="meter-bar">
+              <div className="meter-fill" style={{ width: `${todayStats.percentage}%` }}>
+                <div className="meter-glow"></div>
+              </div>
+            </div>
+            <div className="meter-label">
+              <span className="meter-percentage">{todayStats.percentage}% Complete</span>
+              <span>{todayStats.remaining} tasks remaining today</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="stats-grid">
         {loading ? (
