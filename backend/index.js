@@ -518,6 +518,104 @@ app.get('/api/admin/stats', async (req, res) => {
     }
 });
 
+// ─── Admin: Master Calendar ───
+app.get('/api/admin/master-calendar', async (req, res) => {
+    const { month, client_id, content_type } = req.query;
+    if (!month) return res.status(400).json({ error: 'Missing month' });
+
+    const [year, mon] = month.split('-');
+    const startDate = `${year}-${mon}-01T00:00:00`;
+    const lastDay = new Date(parseInt(year), parseInt(mon), 0).getDate();
+    const endDate = `${year}-${mon}-${String(lastDay).padStart(2, '0')}T23:59:59`;
+
+    let query = supabase
+        .from('content_items')
+        .select(`*, clients (company_name)`)
+        .gte('scheduled_datetime', startDate)
+        .lte('scheduled_datetime', endDate);
+
+    if (client_id) query = query.eq('client_id', client_id);
+    if (content_type) query = query.eq('content_type', content_type);
+
+    const { data, error } = await query.order('scheduled_datetime');
+
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+});
+
+app.get('/api/admin/content/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [itemRes, logsRes] = await Promise.all([
+            supabase.from('content_items').select(`*, clients (company_name)`).eq('id', id).single(),
+            supabase.from('status_logs').select(`*, users:changed_by (name, role_identifier)`).eq('item_id', id).order('changed_at', { ascending: false })
+        ]);
+
+        if (itemRes.error) return res.status(500).json({ error: itemRes.error.message });
+        res.json({ item: itemRes.data, history: logsRes.data || [] });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/admin/content/:id/undo-status', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { data: latestLog, error: logFetchError } = await supabase
+            .from('status_logs')
+            .select('*')
+            .eq('item_id', id)
+            .order('changed_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (logFetchError || !latestLog) return res.status(404).json({ error: 'No status history found' });
+
+        const { error: revertError } = await supabase
+            .from('content_items')
+            .update({ status: latestLog.old_status, updated_at: new Date().toISOString() })
+            .eq('id', id);
+
+        if (revertError) return res.status(500).json({ error: 'Failed to revert' });
+        await supabase.from('status_logs').delete().eq('id', latestLog.id);
+        res.json({ message: 'Success', previous_status: latestLog.old_status });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/admin/content', async (req, res) => {
+    const { client_id, title, description, content_type, scheduled_datetime } = req.body;
+    const initial_status = content_type === 'Post' ? 'CONTENT APPROVED' : 'CONTENT READY';
+
+    const { data, error } = await supabase
+        .from('content_items')
+        .insert([{ client_id, title, description, content_type, scheduled_datetime, status: initial_status }])
+        .select();
+
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data[0]);
+});
+
+app.put('/api/admin/content/:id', async (req, res) => {
+    const { id } = req.params;
+    const { title, description, scheduled_datetime, is_rescheduled } = req.body;
+    const { data, error } = await supabase
+        .from('content_items')
+        .update({ title, description, scheduled_datetime, is_rescheduled })
+        .eq('id', id)
+        .select();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data[0]);
+});
+
+app.delete('/api/admin/content/:id', async (req, res) => {
+    const { id } = req.params;
+    const { error } = await supabase.from('content_items').delete().eq('id', id);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ message: 'Deleted successfully' });
+});
+
 // ─── Team Leads ───
 app.get('/api/gm/team-leads', async (req, res) => {
     const { data, error } = await supabase
@@ -739,7 +837,7 @@ app.get('/api/posting/today', async (req, res) => {
         const { data, error } = await supabase
             .from('content_items')
             .select(`*, clients (company_name)`)
-            .eq('status', 'WAITING FOR POSTING')
+            .in('status', ['WAITING FOR POSTING', 'POSTED'])
             .gte('scheduled_datetime', startDate)
             .lte('scheduled_datetime', endDate)
             .order('scheduled_datetime');
@@ -765,7 +863,6 @@ app.get('/api/posting/calendar', async (req, res) => {
         .from('content_items')
         .select(`*, clients (company_name)`)
         .eq('client_id', client_id)
-        .eq('status', 'WAITING FOR POSTING')
         .gte('scheduled_datetime', startDate)
         .lte('scheduled_datetime', endDate)
         .order('scheduled_datetime');
@@ -787,7 +884,6 @@ app.get('/api/posting/master-calendar', async (req, res) => {
     let query = supabase
         .from('content_items')
         .select(`*, clients (company_name)`)
-        .eq('status', 'WAITING FOR POSTING')
         .gte('scheduled_datetime', startDate)
         .lte('scheduled_datetime', endDate);
 
@@ -879,6 +975,35 @@ app.patch('/api/posting/content/:id/post', async (req, res) => {
         }
 
         res.json({ message: 'Content marked as POSTED successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Posting Team: Undo Posted (Rollback)
+app.post('/api/posting/content/:id/undo', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { data: latestLog, error: logFetchError } = await supabase
+            .from('status_logs')
+            .select('*')
+            .eq('item_id', id)
+            .eq('new_status', 'POSTED')
+            .order('changed_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (logFetchError || !latestLog) return res.status(404).json({ error: 'No recent posting history found' });
+
+        const { error: revertError } = await supabase
+            .from('content_items')
+            .update({ status: 'WAITING FOR POSTING', updated_at: new Date().toISOString() })
+            .eq('id', id);
+
+        if (revertError) return res.status(500).json({ error: 'Failed to revert status' });
+
+        await supabase.from('status_logs').delete().eq('id', latestLog.id);
+        res.json({ message: 'Success', status: 'WAITING FOR POSTING' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

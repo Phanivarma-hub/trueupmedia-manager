@@ -61,23 +61,23 @@ export default function AdminDashboard() {
       <div className="daily-stats-banner">
         <div className="progress-meter-card">
           <div className="progress-info">
-            <h3 className="stat-label">Today's Progress</h3>
-            <div className="progress-values">
-              <span className="current">{todayStats.completed}</span>
-              <span className="separator">/</span>
-              <span className="total">{todayStats.total}</span>
-              <span className="unit"> Tasks Posted</span>
-            </div>
-          </div>
-          <div className="meter-container">
-            <div className="meter-bar">
-              <div className="meter-fill" style={{ width: `${todayStats.percentage}%` }}>
-                <div className="meter-glow"></div>
+            <div className="progress-main">
+              <div className="progress-count">
+                <span className="current">{todayStats.completed}</span>
+                <span className="total">/{todayStats.total}</span>
               </div>
+              <div className="progress-label">Tasks Completed</div>
             </div>
-            <div className="meter-label">
-              <span className="meter-percentage">{todayStats.percentage}% Complete</span>
-              <span>{todayStats.remaining} tasks remaining today</span>
+            <div className="meter-wrapper">
+              <div className="meter-bar">
+                <div className="meter-fill" style={{ width: `${todayStats.percentage}%` }}>
+                  <div className="meter-glow"></div>
+                </div>
+              </div>
+              <div className="meter-stats">
+                <span className="percentage">{todayStats.percentage}% Done</span>
+                <span className="remaining">{todayStats.remaining} remaining</span>
+              </div>
             </div>
           </div>
         </div>

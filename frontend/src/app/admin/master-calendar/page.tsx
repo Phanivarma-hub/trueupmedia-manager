@@ -70,7 +70,7 @@ export default function MasterCalendar() {
     const fetchMasterData = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await gmApi.getMasterCalendar(
+            const res = await adminApi.getMasterCalendar(
                 format(currentMonth, 'yyyy-MM'),
                 selectedClient === 'all' ? undefined : selectedClient,
                 selectedType === 'all' ? undefined : selectedType
@@ -104,7 +104,7 @@ export default function MasterCalendar() {
     };
     const handleItemClick = async (item: ContentItem) => {
         try {
-            const res = await gmApi.getContentDetails(item.id);
+            const res = await adminApi.getContentDetails(item.id);
             setSelectedItem(res.data);
         } catch (err) { console.error(err); }
     };
@@ -113,8 +113,8 @@ export default function MasterCalendar() {
         if (!selectedItem) return;
         if (!window.confirm('Are you sure you want to undo the last status change?')) return;
         try {
-            await gmApi.undoStatus(selectedItem.item.id);
-            const res = await gmApi.getContentDetails(selectedItem.item.id);
+            await adminApi.undoStatus(selectedItem.item.id);
+            const res = await adminApi.getContentDetails(selectedItem.item.id);
             setSelectedItem(res.data);
             fetchMasterData();
         } catch (err) { 

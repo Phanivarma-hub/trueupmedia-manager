@@ -83,7 +83,7 @@ export default function ClientCalendarPage() {
         setLoading(true);
         try {
             // Fetch for a slightly larger range to ensure we cover the week/month boundaries
-            const res = await gmApi.getMasterCalendar(
+            const res = await adminApi.getMasterCalendar(
                 format(currentMonth, 'yyyy-MM'),
                 clientId
             );
@@ -118,7 +118,7 @@ export default function ClientCalendarPage() {
 
     const handleItemClick = async (item: ContentItem) => {
         try {
-            const res = await gmApi.getContentDetails(item.id);
+            const res = await adminApi.getContentDetails(item.id);
             setSelectedItem(res.data);
         } catch (err) { console.error(err); }
     };
@@ -154,7 +154,7 @@ export default function ClientCalendarPage() {
     const handleDeleteContent = async (id: string) => {
         if (!window.confirm('Are you sure you want to delete this content item?')) return;
         try {
-            await gmApi.deleteContent(id);
+            await adminApi.deleteContent(id);
             setSelectedItem(null);
             fetchCalendarData();
         } catch (err) { console.error(err); alert('Failed to delete content'); }
@@ -164,8 +164,8 @@ export default function ClientCalendarPage() {
         if (!selectedItem) return;
         if (!window.confirm('Are you sure you want to undo the last status change?')) return;
         try {
-            await gmApi.undoStatus(selectedItem.item.id);
-            const res = await gmApi.getContentDetails(selectedItem.item.id);
+            await adminApi.undoStatus(selectedItem.item.id);
+            const res = await adminApi.getContentDetails(selectedItem.item.id);
             setSelectedItem(res.data);
             fetchCalendarData();
         } catch (err) { 
@@ -178,12 +178,12 @@ export default function ClientCalendarPage() {
         e.preventDefault();
         try {
             if (editingItem) {
-                await gmApi.updateContent(editingItem.id, {
+                await adminApi.updateContent(editingItem.id, {
                     ...formData,
                     is_rescheduled: isRescheduling ? true : editingItem.is_rescheduled
                 });
             } else {
-                await gmApi.addContent(formData);
+                await adminApi.addContent(formData);
             }
             setShowAddModal(false);
             setEditingItem(null);

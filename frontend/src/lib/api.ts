@@ -6,7 +6,7 @@ const supabase = createClient();
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://trueupmedia-manager.onrender.com';
 
 const api = axios.create({
-    baseURL: `${API_BASE_URL}/api/gm`,
+    baseURL: API_BASE_URL,
 });
 
 api.interceptors.request.use(async (config) => {
@@ -46,24 +46,24 @@ export interface StatusHistoryItem {
 }
 
 export const gmApi = {
-    getClients: () => api.get<Client[]>('/clients'),
-    getCalendar: (clientId: string, month: string) => api.get(`/calendar?client_id=${clientId}&month=${month}`),
+    getClients: () => api.get<Client[]>('/api/gm/clients'),
+    getCalendar: (clientId: string, month: string) => api.get(`/api/gm/calendar?client_id=${clientId}&month=${month}`),
     getMasterCalendar: (month: string, clientId?: string, contentType?: string) =>
-        api.get<ContentItem[]>(`/master-calendar?month=${month}${clientId ? `&client_id=${clientId}` : ''}${contentType ? `&content_type=${contentType}` : ''}`),
-    getContentDetails: (id: string) => api.get<{ item: ContentItem, history: StatusHistoryItem[] }>(`/content/${id}`),
-    addContent: (data: Partial<ContentItem>) => api.post('/content', data),
-    updateContent: (id: string, data: Partial<ContentItem>) => api.put(`/content/${id}`, data),
-    deleteContent: (id: string) => api.delete(`/content/${id}`),
+        api.get<ContentItem[]>(`/api/gm/master-calendar?month=${month}${clientId ? `&client_id=${clientId}` : ''}${contentType ? `&content_type=${contentType}` : ''}`),
+    getContentDetails: (id: string) => api.get<{ item: ContentItem, history: StatusHistoryItem[] }>(`/api/gm/content/${id}`),
+    addContent: (data: Partial<ContentItem>) => api.post('/api/gm/content', data),
+    updateContent: (id: string, data: Partial<ContentItem>) => api.put(`/api/gm/content/${id}`, data),
+    deleteContent: (id: string) => api.delete(`/api/gm/content/${id}`),
     updateStatus: (id: string, new_status: string, note?: string, changed_by?: string) =>
-        api.patch(`/content/${id}/status`, { new_status, note, changed_by }),
-    getTeamLeads: () => api.get('/team-leads'),
-    assignClient: (clientId: string, teamLeadId: string) => api.patch(`/clients/${clientId}/assign`, { team_lead_id: teamLeadId }),
-    getTeamLeadClients: (teamLeadId: string) => api.get(`/team-leads/${teamLeadId}/clients`),
-    undoStatus: (contentId: string) => api.post(`/content/${contentId}/undo-status`),
+        api.patch(`/api/gm/content/${id}/status`, { new_status, note, changed_by }),
+    getTeamLeads: () => api.get('/api/gm/team-leads'),
+    assignClient: (clientId: string, teamLeadId: string) => api.patch(`/api/gm/clients/${clientId}/assign`, { team_lead_id: teamLeadId }),
+    getTeamLeadClients: (teamLeadId: string) => api.get(`/api/gm/team-leads/${teamLeadId}/clients`),
+    undoStatus: (contentId: string) => api.post(`/api/gm/content/${contentId}/undo-status`),
 };
 
 const adminBase = axios.create({
-    baseURL: `${API_BASE_URL}/api/admin`,
+    baseURL: API_BASE_URL,
 });
 
 adminBase.interceptors.request.use(async (config) => {
@@ -85,19 +85,26 @@ export interface TeamMember {
 }
 
 export const adminApi = {
-    getClients: () => adminBase.get<Client[]>('/clients'),
-    addClient: (data: Partial<Client>) => adminBase.post('/clients', data),
-    updateClient: (id: string, data: Partial<Client>) => adminBase.put(`/clients/${id}`, data),
-    deleteClient: (id: string) => adminBase.delete(`/clients/${id}`),
-    getStats: () => adminBase.get('/stats'),
-    getTeam: () => adminBase.get<TeamMember[]>('/team'),
-    addTeamMember: (data: Partial<TeamMember>) => adminBase.post('/team', data),
-    updateTeamMember: (id: string, data: Record<string, unknown>) => adminBase.put(`/team/${id}`, data),
-    deleteTeamMember: (id: string) => adminBase.delete(`/team/${id}`),
+    getClients: () => adminBase.get<Client[]>('/api/admin/clients'),
+    addClient: (data: Partial<Client>) => adminBase.post('/api/admin/clients', data),
+    updateClient: (id: string, data: Partial<Client>) => adminBase.put(`/api/admin/clients/${id}`, data),
+    deleteClient: (id: string) => adminBase.delete(`/api/admin/clients/${id}`),
+    getStats: () => adminBase.get('/api/admin/stats'),
+    getTeam: () => adminBase.get('/api/admin/team'),
+    addTeamMember: (data: Partial<TeamMember>) => adminBase.post('/api/admin/team', data),
+    updateTeamMember: (id: string, data: Record<string, unknown>) => adminBase.put(`/api/admin/team/${id}`, data),
+    deleteTeamMember: (id: string) => adminBase.delete(`/api/admin/team/${id}`),
+    getMasterCalendar: (month: string, clientId?: string, contentType?: string) =>
+        adminBase.get<ContentItem[]>(`/api/admin/master-calendar?month=${month}${clientId ? `&client_id=${clientId}` : ''}${contentType ? `&content_type=${contentType}` : ''}`),
+    getContentDetails: (id: string) => adminBase.get<{ item: ContentItem; history: StatusHistoryItem[] }>(`/api/admin/content/${id}`),
+    undoStatus: (contentId: string) => adminBase.post(`/api/admin/content/${contentId}/undo-status`),
+    addContent: (data: Partial<ContentItem>) => adminBase.post('/api/admin/content', data),
+    updateContent: (id: string, data: Partial<ContentItem>) => adminBase.put(`/api/admin/content/${id}`, data),
+    deleteContent: (id: string) => adminBase.delete(`/api/admin/content/${id}`),
 };
 
 const tlBase = axios.create({
-    baseURL: `${API_BASE_URL}/api/tl`,
+    baseURL: `${API_BASE_URL}/api/tl/`,
 });
 
 tlBase.interceptors.request.use(async (config) => {
@@ -109,15 +116,15 @@ tlBase.interceptors.request.use(async (config) => {
 });
 
 export const tlApi = {
-    getClients: (tlId: string) => tlBase.get<Client[]>(`/clients?tlId=${tlId}`),
-    getCalendar: (clientId: string, month: string, tlId: string) => tlBase.get(`/calendar?client_id=${clientId}&month=${month}&tlId=${tlId}`),
+    getClients: (tlId: string) => tlBase.get<Client[]>(`clients?tlId=${tlId}`),
+    getCalendar: (clientId: string, month: string, tlId: string) => tlBase.get(`calendar?client_id=${clientId}&month=${month}&tlId=${tlId}`),
     getMasterCalendar: (month: string, tlId: string, contentType?: string) =>
-        tlBase.get<ContentItem[]>(`/master-calendar?month=${month}&tlId=${tlId}${contentType ? `&content_type=${contentType}` : ''}`),
+        tlBase.get<ContentItem[]>(`master-calendar?month=${month}&tlId=${tlId}${contentType ? `&content_type=${contentType}` : ''}`),
 };
 
 // ─── Posting Team API ───
 const postingBase = axios.create({
-    baseURL: `${API_BASE_URL}/api/posting`,
+    baseURL: `${API_BASE_URL}/api/posting/`,
 });
 
 postingBase.interceptors.request.use(async (config) => {
@@ -129,20 +136,22 @@ postingBase.interceptors.request.use(async (config) => {
 });
 
 export const postingApi = {
-    getToday: () => postingBase.get<ContentItem[]>('/today'),
-    getClients: () => postingBase.get<Client[]>('/clients'),
+    getToday: () => postingBase.get<ContentItem[]>('today'),
+    getClients: () => postingBase.get<Client[]>('clients'),
     getCalendar: (clientId: string, month: string) =>
-        postingBase.get<ContentItem[]>(`/calendar?client_id=${clientId}&month=${month}`),
+        postingBase.get<ContentItem[]>(`calendar?client_id=${clientId}&month=${month}`),
     getMasterCalendar: (month: string, clientId?: string) =>
-        postingBase.get<ContentItem[]>(`/master-calendar?month=${month}${clientId ? `&client_id=${clientId}` : ''}`),
+        postingBase.get<ContentItem[]>(`master-calendar?month=${month}${clientId ? `&client_id=${clientId}` : ''}`),
     getContentDetails: (id: string) =>
-        postingBase.get<{ item: ContentItem; history: StatusHistoryItem[] }>(`/content/${id}`),
+        postingBase.get<{ item: ContentItem; history: StatusHistoryItem[] }>(`content/${id}`),
     markAsPosted: (id: string, changedBy?: string) =>
-        postingBase.patch(`/content/${id}/post`, { changed_by: changedBy }),
+        postingBase.patch(`content/${id}/post`, { changed_by: changedBy }),
+    undoStatus: (id: string) =>
+        postingBase.post(`content/${id}/undo`),
 };
 
 const notificationBase = axios.create({
-    baseURL: `${API_BASE_URL}/api/notifications`,
+    baseURL: API_BASE_URL,
 });
 
 notificationBase.interceptors.request.use(async (config) => {
@@ -173,15 +182,15 @@ export interface NotificationTarget {
 }
 
 export const notificationApi = {
-    getNotifications: () => notificationBase.get<NotificationItem[]>('/'),
-    getUnreadCount: () => notificationBase.get<{ count: number }>('/unread-count'),
-    markAsRead: (notificationId: string) => notificationBase.patch(`/${notificationId}/read`),
+    getNotifications: () => notificationBase.get<NotificationItem[]>('/api/notifications'),
+    getUnreadCount: () => notificationBase.get<{ count: number }>('/api/notifications/unread-count'),
+    markAsRead: (notificationId: string) => notificationBase.patch(`/api/notifications/${notificationId}/read`),
     sendNotification: (payload: {
         title: string;
         message: string;
         type: 'INFO' | 'WARNING' | 'URGENT';
         target: NotificationTarget;
-    }) => notificationBase.post('/send', payload),
+    }) => notificationBase.post('/api/notifications/send', payload),
 };
 
 export default api;

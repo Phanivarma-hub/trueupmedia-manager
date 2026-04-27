@@ -159,11 +159,13 @@ export default function PostingDashboard() {
             setToast('Content marked as POSTED!');
             setTimeout(() => setToast(null), 3000);
             
-            // Refresh
-            fetchTodayStats();
-            if (view === 'dashboard') fetchTodayQueue();
-            else if (view === 'client') fetchClientCalendar();
-            else fetchMasterCalendar();
+            // Refresh everything
+            await Promise.all([
+                fetchTodayStats(),
+                fetchTodayQueue(),
+                view === 'client' ? fetchClientCalendar() : Promise.resolve(),
+                view === 'master' ? fetchMasterCalendar() : Promise.resolve()
+            ]);
             
             if (activeItem?.item?.id === id) {
                 const res = await postingApi.getContentDetails(id);
@@ -171,6 +173,30 @@ export default function PostingDashboard() {
             }
         } catch (err: any) {
             alert(err.response?.data?.error || 'Failed to mark as posted');
+        } finally { setPostingId(null); }
+    };
+
+    const handleUndo = async (id: string) => {
+        setPostingId(id);
+        try {
+            await postingApi.undoStatus(id);
+            setToast('Reverted to Waiting for Posting');
+            setTimeout(() => setToast(null), 3000);
+            
+            // Refresh everything
+            await Promise.all([
+                fetchTodayStats(),
+                fetchTodayQueue(),
+                view === 'client' ? fetchClientCalendar() : Promise.resolve(),
+                view === 'master' ? fetchMasterCalendar() : Promise.resolve()
+            ]);
+
+            if (activeItem?.item?.id === id) {
+                const res = await postingApi.getContentDetails(id);
+                setActiveItem(res.data);
+            }
+        } catch (err: any) {
+            alert(err.response?.data?.error || 'Failed to undo status');
         } finally { setPostingId(null); }
     };
 
@@ -192,8 +218,9 @@ export default function PostingDashboard() {
         end: endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 1 })
     });
 
-    const queuePosts = queue.filter(i => i.content_type === 'Post').length;
-    const queueReels = queue.filter(i => i.content_type === 'Reel').length;
+    const queuePosts = queue.filter(i => i.content_type === 'Post' && i.status !== 'POSTED').length;
+    const queueReels = queue.filter(i => i.content_type === 'Reel' && i.status !== 'POSTED').length;
+    const totalPending = queue.filter(i => i.status !== 'POSTED').length;
 
     return (
         <div className="dashboard-container">
@@ -207,14 +234,8 @@ export default function PostingDashboard() {
 
             {/* Sidebar */}
             <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
-                <div className="logo-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span style={{ color: 'var(--accent)', fontSize: '18px', fontWeight: 800, letterSpacing: '-0.5px' }}>TrueUp</span>
-                        <span style={{ marginLeft: '6px', color: 'var(--text-muted)', fontSize: '10px', fontWeight: 600, marginTop: '2px' }}>POSTING</span>
-                    </div>
-                    <button onClick={() => setIsSidebarOpen(false)} className="sidebar-close" style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                        <X size={24} />
-                    </button>
+                <div className="logo-container">
+                    <img src="/logo.png" alt="TrueUp Media" className="logo-img" style={{ height: '42px', width: 'auto' }} />
                 </div>
 
                 <nav className="flex-1 sidebar-nav">
@@ -245,32 +266,34 @@ export default function PostingDashboard() {
                         <>
                             <p className="sidebar-label">Clients</p>
                             <div className="client-list">
-                                {clients.map(c => (
-                                    <div
-                                        key={c.id}
-                                        onClick={() => setSelectedClient(c.id)}
-                                        className={`client-item ${selectedClient === c.id ? 'selected' : ''}`}
-                                    >
-                                        <div className="client-avatar">
-                                            {c.company_name?.charAt(0) || '?'}
+                                {clients
+                                    .sort((a, b) => (a.company_name || '').localeCompare(b.company_name || ''))
+                                    .map(c => (
+                                        <div
+                                            key={c.id}
+                                            onClick={() => setSelectedClient(c.id)}
+                                            className={`client-item ${selectedClient === c.id ? 'selected' : ''}`}
+                                        >
+                                            <div className="client-avatar">
+                                                {c.company_name?.charAt(0).toUpperCase() || '?'}
+                                            </div>
+                                            <span>{c.company_name}</span>
                                         </div>
-                                        <span>{c.company_name}</span>
-                                    </div>
-                                ))}
+                                    ))}
                             </div>
                         </>
                     )}
                 </nav>
 
                 <div className="sidebar-footer">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <p className="sidebar-label" style={{ margin: 0 }}>Appearance</p>
-                        <ThemeToggle style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gridColumn: '1 / -1', marginBottom: '4px' }}>
+                        <span className="sidebar-label" style={{ margin: 0, padding: 0 }}>Appearance</span>
+                        <ThemeToggle style={{ width: '28px', height: '28px', borderRadius: '8px' }} />
                     </div>
                     <div className="user-info-box">
-                        <div className="user-avatar" style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white' }}>PT</div>
-                        <div>
-                            <p className="user-name">Posting Team</p>
+                        <div className="user-avatar" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-secondary))', color: 'white' }}>PT</div>
+                        <div style={{ minWidth: 0 }}>
+                            <p className="user-name" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Posting Team</p>
                             <p className="user-role">TrueUp Media</p>
                         </div>
                     </div>
@@ -286,7 +309,7 @@ export default function PostingDashboard() {
                     <div className="menu-toggle" onClick={() => setIsSidebarOpen(true)}>
                         <Menu size={24} />
                     </div>
-                    <span style={{ color: 'var(--accent)', fontSize: '16px', fontWeight: 800 }}>TrueUp</span>
+                    <img src="/logo.png" alt="TrueUp Media" style={{ height: '24px', width: 'auto' }} />
                     <div style={{ width: '40px' }}></div>
                 </div>
 
@@ -358,23 +381,23 @@ export default function PostingDashboard() {
                     <div className="daily-stats-banner">
                         <div className="progress-meter-card">
                             <div className="progress-info">
-                                <h3 className="stat-label">Today's Progress</h3>
-                                <div className="progress-values">
-                                    <span className="current">{todayStats.completed}</span>
-                                    <span className="separator">/</span>
-                                    <span className="total">{todayStats.total}</span>
-                                    <span className="unit"> Tasks Posted</span>
-                                </div>
-                            </div>
-                            <div className="meter-container">
-                                <div className="meter-bar">
-                                    <div className="meter-fill" style={{ width: `${todayStats.percentage}%` }}>
-                                        <div className="meter-glow"></div>
+                                <div className="progress-main">
+                                    <div className="progress-count">
+                                        <span className="current">{todayStats.completed}</span>
+                                        <span className="total">/{todayStats.total}</span>
                                     </div>
+                                    <div className="progress-label">Tasks Completed</div>
                                 </div>
-                                <div className="meter-label">
-                                    <span className="meter-percentage">{todayStats.percentage}% Complete</span>
-                                    <span>{todayStats.remaining} tasks remaining today</span>
+                                <div className="meter-wrapper">
+                                    <div className="meter-bar">
+                                        <div className="meter-fill" style={{ width: `${todayStats.percentage}%` }}>
+                                            <div className="meter-glow"></div>
+                                        </div>
+                                    </div>
+                                    <div className="meter-stats">
+                                        <span className="percentage">{todayStats.percentage}% Done</span>
+                                        <span className="remaining">{todayStats.remaining} remaining</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -390,7 +413,7 @@ export default function PostingDashboard() {
                                 </div>
                                 <div className="stat-info">
                                     <h3>Total Queue</h3>
-                                    <p className="stat-value">{queue.length}</p>
+                                    <p className="stat-value">{totalPending}</p>
                                 </div>
                             </div>
                             <div className="stat-card">
@@ -437,14 +460,17 @@ export default function PostingDashboard() {
                                 ) : (
                                     <div className="posting-queue">
                                         {queue.map(item => (
-                                            <div key={item.id} className="queue-item">
+                                            <div key={item.id} className={`queue-item ${item.status === 'POSTED' ? 'is-posted' : ''}`}>
                                                 <div className="queue-item-left" onClick={() => handleItemClick(item)}>
                                                     <div className="queue-time-badge">
                                                         <span className="time-text">{format(parseISO(item.scheduled_datetime), 'hh:mm')}</span>
                                                         <span className="ampm-text">{format(parseISO(item.scheduled_datetime), 'a')}</span>
                                                     </div>
                                                     <div className="queue-item-info">
-                                                        <span className="queue-item-client">{item.clients?.company_name}</span>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <span className="queue-item-client">{item.clients?.company_name}</span>
+                                                            {item.status === 'POSTED' && <CheckCircle2 size={14} style={{ color: 'var(--success)' }} />}
+                                                        </div>
                                                         <span className="queue-item-title">{item.title}</span>
                                                     </div>
                                                 </div>
@@ -453,13 +479,24 @@ export default function PostingDashboard() {
                                                         {item.content_type === 'Post' ? <FileText size={12} /> : <Video size={12} />}
                                                         {item.content_type}
                                                     </span>
-                                                    <button
-                                                        className="btn-mark-posted"
-                                                        onClick={() => handleMarkPosted(item.id)}
-                                                        disabled={postingId === item.id}
-                                                    >
-                                                        {postingId === item.id ? 'Posting...' : 'Mark as Posted'}
-                                                    </button>
+                                                    {item.status === 'POSTED' ? (
+                                                        <button
+                                                            className="btn-rollback"
+                                                            onClick={() => handleUndo(item.id)}
+                                                            disabled={postingId === item.id}
+                                                            title="Revert to waiting"
+                                                        >
+                                                            {postingId === item.id ? '...' : 'Undo'}
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            className="btn-mark-posted"
+                                                            onClick={() => handleMarkPosted(item.id)}
+                                                            disabled={postingId === item.id}
+                                                        >
+                                                            {postingId === item.id ? 'Posting...' : 'Mark as Posted'}
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
