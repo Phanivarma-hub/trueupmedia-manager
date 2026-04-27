@@ -38,7 +38,7 @@ const ScheduleExport: React.FC<ScheduleExportProps> = ({ data, clientName, month
                 backgroundColor: '#ffffff',
                 logging: false,
                 windowWidth: 800 // Ensure consistent width for capture
-            });
+            } as any);
             const imgData = canvas.toDataURL('image/png', 1.0);
             
             // Calculate dimensions to fit content
