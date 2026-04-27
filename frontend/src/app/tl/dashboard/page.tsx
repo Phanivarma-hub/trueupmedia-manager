@@ -87,6 +87,8 @@ export default function TLDashboard() {
     const [isPocModalOpen, setIsPocModalOpen] = useState(false);
     const [selectedPocDate, setSelectedPocDate] = useState<Date | null>(null);
     const [pocNoteText, setPocNoteText] = useState('');
+    const [selectedPocNote, setSelectedPocNote] = useState<PocNote | null>(null);
+    const [isPocDetailsOpen, setIsPocDetailsOpen] = useState(false);
 
     useEffect(() => {
         if (calendarData.length > 0) {
@@ -207,6 +209,9 @@ export default function TLDashboard() {
         setLoading(true);
         try {
             const res = await tlApi.getPocNotes(format(currentMonth, 'yyyy-MM'), user.id);
+            // #region agent log
+            fetch('http://127.0.0.1:7696/ingest/96709530-e5a7-4fe9-9900-96c06c55f127',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c23e7e'},body:JSON.stringify({sessionId:'c23e7e',runId:'pre-fix',hypothesisId:'H1',location:'tl/dashboard/page.tsx:fetchPocNotes',message:'POC notes payload shape',data:{count:res.data?.length||0,first:res.data?.[0]?{id:res.data[0].id,note_date:res.data[0].note_date,has_content_type:Object.prototype.hasOwnProperty.call(res.data[0],'content_type'),keys:Object.keys(res.data[0]).slice(0,8)}:null},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
             setPocNotes(res.data || []);
         } catch (err) {
             console.error('Error fetching POC notes:', err);
@@ -214,6 +219,14 @@ export default function TLDashboard() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        const source = view === 'poc' ? pocNotes : calendarData;
+        const missingContentType = (source as any[]).filter((item: any) => !item?.content_type).length;
+        // #region agent log
+        fetch('http://127.0.0.1:7696/ingest/96709530-e5a7-4fe9-9900-96c06c55f127',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c23e7e'},body:JSON.stringify({sessionId:'c23e7e',runId:'pre-fix',hypothesisId:'H2',location:'tl/dashboard/page.tsx:viewDataSummary',message:'Current view data summary',data:{view,total:source.length,missing_content_type:missingContentType},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+    }, [view, pocNotes, calendarData]);
 
     const handlePocDayClick = (date: Date) => {
         setSelectedPocDate(date);
@@ -237,6 +250,11 @@ export default function TLDashboard() {
             console.error('Error saving POC note:', err);
             alert('Failed to save note');
         }
+    };
+
+    const handlePocNoteClick = (note: PocNote) => {
+        setSelectedPocNote(note);
+        setIsPocDetailsOpen(true);
     };
 
     const handlePrev = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -609,6 +627,14 @@ export default function TLDashboard() {
                                                 const itemDate = parseISO(item.scheduled_datetime);
                                                 return isSameDay(itemDate, day);
                                             });
+                                        if (dayContent.length > 0) {
+                                            const hasMissingContentType = dayContent.some((item: any) => !item?.content_type);
+                                            if (hasMissingContentType) {
+                                                // #region agent log
+                                                fetch('http://127.0.0.1:7696/ingest/96709530-e5a7-4fe9-9900-96c06c55f127',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c23e7e'},body:JSON.stringify({sessionId:'c23e7e',runId:'pre-fix',hypothesisId:'H3',location:'tl/dashboard/page.tsx:days.map',message:'Day content has items without content_type',data:{isPocView,day:format(day,'yyyy-MM-dd'),sample:dayContent.slice(0,2).map((i:any)=>({id:i?.id,content_type:i?.content_type,note_date:i?.note_date}))},timestamp:Date.now()})}).catch(()=>{});
+                                                // #endregion
+                                            }
+                                        }
                                         return (
                                             <div 
                                                 key={idx} 
@@ -625,8 +651,10 @@ export default function TLDashboard() {
                                                         <div 
                                                             key={item.id}
                                                             onClick={(e) => {
-                                                                if (!isPocView) {
-                                                                    e.stopPropagation();
+                                                                e.stopPropagation();
+                                                                if (isPocView) {
+                                                                    handlePocNoteClick(item as PocNote);
+                                                                } else {
                                                                     handleItemClick(item);
                                                                 }
                                                             }}
@@ -644,10 +672,18 @@ export default function TLDashboard() {
                                                 </div>
                                                 <div className="mobile-day-indicators">
                                                     {dayContent.map(item => (
-                                                        <div 
-                                                            key={item.id}
-                                                            className={`mobile-dot ${item.content_type.toLowerCase()} ${item.is_emergency ? 'emergency' : ''}`}
-                                                        ></div>
+                                                        <>
+                                                            {/* #region agent log */}
+                                                            {(() => {
+                                                                fetch('http://127.0.0.1:7696/ingest/96709530-e5a7-4fe9-9900-96c06c55f127',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c23e7e'},body:JSON.stringify({sessionId:'c23e7e',runId:'pre-fix',hypothesisId:'H4',location:'tl/dashboard/page.tsx:mobile-day-indicators',message:'Mobile dot item shape before className compute',data:{view,item_id:item?.id||null,content_type:item?.content_type??null,item_keys:item?Object.keys(item).slice(0,10):[]},timestamp:Date.now()})}).catch(()=>{});
+                                                                return null;
+                                                            })()}
+                                                            {/* #endregion */}
+                                                            <div 
+                                                                key={item.id}
+                                                                className={`mobile-dot ${(item.content_type || '').toLowerCase()} ${item.is_emergency ? 'emergency' : ''}`}
+                                                            ></div>
+                                                        </>
                                                     ))}
                                                 </div>
                                             </div>
@@ -934,6 +970,46 @@ export default function TLDashboard() {
                                 Save Note
                             </button>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {isPocDetailsOpen && selectedPocNote && (
+                <div className="modal-overlay" onClick={() => setIsPocDetailsOpen(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3 className="modal-title">POC Note Details</h3>
+                            <button onClick={() => setIsPocDetailsOpen(false)} className="modal-close"><X size={20} /></button>
+                        </div>
+                        <div className="modal-form">
+                            <div className="form-group">
+                                <label className="form-label">Date</label>
+                                <input
+                                    type="text"
+                                    className="form-input"
+                                    value={format(parseISO(`${selectedPocNote.note_date}T00:00:00`), 'PPP')}
+                                    readOnly
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Added By</label>
+                                <input
+                                    type="text"
+                                    className="form-input"
+                                    value={selectedPocNote.users?.role_identifier || selectedPocNote.users?.name || 'Team Lead'}
+                                    readOnly
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Note</label>
+                                <textarea
+                                    className="form-input"
+                                    value={selectedPocNote.note_text}
+                                    rows={5}
+                                    readOnly
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

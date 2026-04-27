@@ -90,6 +90,8 @@ export default function GMDashboard() {
     const [emergencyTasks, setEmergencyTasks] = useState<ContentItem[]>([]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [pocNotes, setPocNotes] = useState<PocNote[]>([]);
+    const [selectedPocNote, setSelectedPocNote] = useState<PocNote | null>(null);
+    const [isPocDetailsOpen, setIsPocDetailsOpen] = useState(false);
 
     const router = useRouter();
     const supabase = createClient();
@@ -390,6 +392,11 @@ export default function GMDashboard() {
     const handleLogout = async () => {
         await supabase.auth.signOut();
         router.push('/');
+    };
+
+    const handlePocNoteClick = (note: PocNote) => {
+        setSelectedPocNote(note);
+        setIsPocDetailsOpen(true);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -1014,9 +1021,12 @@ export default function GMDashboard() {
                                                         <div
                                                             key={item.id}
                                                             onClick={(e) => {
-                                                                if (isPocView) return;
                                                                 e.stopPropagation();
-                                                                handleItemClick(item);
+                                                                if (isPocView) {
+                                                                    handlePocNoteClick(item as PocNote);
+                                                                } else {
+                                                                    handleItemClick(item);
+                                                                }
                                                             }}
                                                             className={isPocView ? 'content-item post' : `content-item ${item.is_rescheduled ? 'rescheduled' : item.content_type.toLowerCase()} ${item.is_emergency ? 'emergency' : ''}`}
                                                         >
@@ -1453,6 +1463,46 @@ export default function GMDashboard() {
                                         );
                                     });
                                 })()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isPocDetailsOpen && selectedPocNote && (
+                <div className="modal-overlay" onClick={() => setIsPocDetailsOpen(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3 className="modal-title">POC Note Details</h3>
+                            <button onClick={() => setIsPocDetailsOpen(false)} className="modal-close"><X size={20} /></button>
+                        </div>
+                        <div className="modal-form">
+                            <div className="form-group">
+                                <label className="form-label">Date</label>
+                                <input
+                                    type="text"
+                                    className="form-input"
+                                    value={format(parseISO(`${selectedPocNote.note_date}T00:00:00`), 'PPP')}
+                                    readOnly
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Added By</label>
+                                <input
+                                    type="text"
+                                    className="form-input"
+                                    value={selectedPocNote.users?.role_identifier || selectedPocNote.users?.name || 'Team Lead'}
+                                    readOnly
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Note</label>
+                                <textarea
+                                    className="form-input"
+                                    value={selectedPocNote.note_text}
+                                    rows={5}
+                                    readOnly
+                                />
                             </div>
                         </div>
                     </div>
