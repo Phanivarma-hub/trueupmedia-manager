@@ -51,6 +51,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { Skeleton } from '@/components/ui/skeleton';
 import SkeletonCard from '@/components/SkeletonCard';
 import NotificationBell from '@/components/NotificationBell';
+import ScheduleExport from '@/components/ScheduleExport';
 import './gm.css';
 
 // Matches actual DB: content_items has id, client_id, title, scheduled_datetime, status, content_type, description
@@ -605,6 +606,12 @@ export default function GMDashboard() {
                                         </span>
                                         <button onClick={handleNext} className="month-btn"><ChevronRight size={20} /></button>
                                     </div>
+
+                                    <ScheduleExport 
+                                        data={calendarData}
+                                        clientName={selectedClient === 'all' ? 'TrueUp Media' : clients.find(c => c.id === selectedClient)?.company_name || 'Client'}
+                                        month={currentMonth}
+                                    />
                                 </>
                             )}
                         </div>

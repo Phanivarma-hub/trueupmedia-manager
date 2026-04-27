@@ -41,6 +41,7 @@ import { tlApi, gmApi, emergencyApi } from '@/lib/api';
 import { createClient } from '@/utils/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import NotificationBell from '@/components/NotificationBell';
+import ScheduleExport from '@/components/ScheduleExport';
 import '../../admin/admin.css'; // Using Admin Panel UI styles
 
 // Reusing interfaces from GM/Admin
@@ -382,6 +383,12 @@ export default function TLDashboard() {
                             </span>
                             <button onClick={handleNext} className="month-btn"><ChevronRight size={18}/></button>
                         </div>
+
+                        <ScheduleExport 
+                            data={calendarData}
+                            clientName={selectedClient ? clients.find(c => c.id === selectedClient)?.company_name || 'Client' : 'TrueUp Media'}
+                            month={currentMonth}
+                        />
                     </div>
                 </header>
 
