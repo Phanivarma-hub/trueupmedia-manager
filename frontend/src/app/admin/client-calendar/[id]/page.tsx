@@ -307,7 +307,35 @@ export default function ClientCalendarPage() {
                                 className={`calendar-day ${viewMode === 'week' ? 'weekly-cell' : ''} ${!isSameMonth(day, currentMonth) && viewMode === 'month' ? 'other-month' : ''} ${isSameDay(day, new Date()) ? 'today' : ''}`}
                                 style={{ minHeight: viewMode === 'week' ? '300px' : '110px', cursor: 'pointer' }}
                             >
-                                <span className="day-number">{format(day, 'd')}</span>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                    <span className="day-number">{format(day, 'd')}</span>
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setFormData({
+                                                ...formData,
+                                                scheduled_datetime: format(day, "yyyy-MM-dd") + 'T10:00'
+                                            });
+                                            setShowAddModal(true);
+                                        }}
+                                        className="add-task-btn"
+                                        style={{
+                                            background: 'rgba(255, 255, 255, 0.05)',
+                                            border: '1px solid var(--border)',
+                                            borderRadius: '6px',
+                                            padding: '4px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'var(--text-muted)',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                        title="Add Task"
+                                    >
+                                        <Plus size={14} />
+                                    </button>
+                                </div>
                                 <div className="day-items desktop-only">
                                     {dayContent.map(item => (
                                         <div 
@@ -368,6 +396,36 @@ export default function ClientCalendarPage() {
                                     </div>
                                 </div>
                             ))}
+
+                            <button 
+                                onClick={() => {
+                                    setDailyAgenda(null);
+                                    setFormData({
+                                        ...formData,
+                                        scheduled_datetime: format(dailyAgenda.date, "yyyy-MM-dd") + 'T10:00'
+                                    });
+                                    setShowAddModal(true);
+                                }}
+                                style={{
+                                    marginTop: '8px',
+                                    padding: '14px',
+                                    borderRadius: '12px',
+                                    background: 'var(--accent)',
+                                    color: 'white',
+                                    border: 'none',
+                                    fontWeight: 800,
+                                    fontSize: '14px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)'
+                                }}
+                            >
+                                <Plus size={18} />
+                                Add New Task
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -558,8 +616,8 @@ export default function ClientCalendarPage() {
                                                         {historyEntry && (
                                                             <div style={{ 
                                                                 display: 'flex', flexDirection: 'column', marginTop: '6px',
-                                                                padding: '10px 14px', background: 'rgba(255, 255, 255, 0.03)',
-                                                                borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)'
+                                                                padding: '10px 14px', background: 'var(--bg-elevated)',
+                                                                borderRadius: '12px', border: '1px solid var(--border)'
                                                             }}>
                                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                                     <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -572,7 +630,7 @@ export default function ClientCalendarPage() {
                                                                 {historyEntry.note && (
                                                                     <div style={{ 
                                                                         marginTop: '8px', padding: '8px 12px', 
-                                                                        background: 'rgba(255, 255, 255, 0.02)', borderRadius: '8px', 
+                                                                        background: 'var(--bg-surface)', borderRadius: '8px', 
                                                                         fontSize: '12px', color: 'var(--text-secondary)', 
                                                                         fontStyle: 'italic', borderLeft: '3px solid var(--accent)'
                                                                     }}>

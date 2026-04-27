@@ -13,7 +13,7 @@ const cardStyle: React.CSSProperties = {
     width: '380px',
     maxHeight: '520px',
     overflow: 'auto',
-    background: 'rgba(12, 18, 32, 0.85)',
+    background: 'var(--bg-surface)',
     backdropFilter: 'blur(16px)',
     WebkitBackdropFilter: 'blur(16px)',
     border: '1px solid var(--border)',
@@ -271,9 +271,9 @@ export default function NotificationBell() {
                                     style={{ 
                                         borderRadius: 14, 
                                         padding: 16, 
-                                        background: item.is_read ? 'rgba(255,255,255,0.02)' : 'rgba(99,102,241,0.08)',
+                                        background: item.is_read ? 'var(--bg-elevated)' : 'rgba(99,102,241,0.08)',
                                         border: '1px solid',
-                                        borderColor: item.is_read ? 'var(--border)' : 'rgba(99,102,241,0.2)',
+                                        borderColor: item.is_read ? 'var(--border)' : 'var(--accent)',
                                         position: 'relative'
                                     }}
                                 >

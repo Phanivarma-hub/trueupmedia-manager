@@ -333,7 +333,7 @@ export default function MasterCalendar() {
                                     }}
                                     style={{ 
                                         padding: '12px', borderRadius: '10px', 
-                                        background: '#f8fafc', border: '1px solid #e2e8f0',
+                                        background: 'var(--bg-elevated)', border: '1px solid var(--border)',
                                         display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer'
                                     }}
                                 >
@@ -342,10 +342,10 @@ export default function MasterCalendar() {
                                         background: item.content_type === 'Post' ? '#10b981' : '#6366f1' 
                                     }}></div>
                                     <div style={{ flex: 1 }}>
-                                        <p style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>
+                                        <p style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
                                             {item.clients?.company_name}
                                         </p>
-                                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#1e293b' }}>{item.content_type}</p>
+                                        <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>{item.content_type}</p>
                                     </div>
                                 </div>
                             ))}

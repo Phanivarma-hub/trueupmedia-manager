@@ -1114,6 +1114,11 @@
         width: auto !important;
     }
 
+    [data-theme='light'] .page-header {
+        background: rgba(248, 250, 252, 0.8) !important;
+        border-bottom-color: rgba(0, 0, 0, 0.05) !important;
+    }
+
     .header-content {
         flex-direction: column !important;
         align-items: flex-start !important;
@@ -1131,13 +1136,13 @@
         line-height: 1 !important;
         letter-spacing: -0.04em !important;
         margin-bottom: 8px !important;
-        color: #fff !important;
+        color: var(--text-primary) !important;
     }
 
     .page-subtitle {
         font-size: 14px !important;
         line-height: 1.4 !important;
-        color: #94a3b8 !important;
+        color: var(--text-secondary) !important;
         margin-bottom: 0 !important;
         display: block !important;
     }

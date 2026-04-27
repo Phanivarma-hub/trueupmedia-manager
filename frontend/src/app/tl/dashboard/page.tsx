@@ -42,6 +42,7 @@ import { createClient } from '@/utils/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import NotificationBell from '@/components/NotificationBell';
 import ScheduleExport from '@/components/ScheduleExport';
+import ThemeToggle from '@/components/ThemeToggle';
 import '../../admin/admin.css'; // Using Admin Panel UI styles
 
 // Reusing interfaces from GM/Admin
@@ -336,6 +337,10 @@ export default function TLDashboard() {
                 </nav>
 
                 <div className="sidebar-footer">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <p className="sidebar-label" style={{ margin: 0 }}>Appearance</p>
+                        <ThemeToggle style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
+                    </div>
                     <div className="user-info-box">
                         <div className="user-avatar">
                             <Users size={20} />
@@ -760,11 +765,11 @@ export default function TLDashboard() {
                                             }}>
                                                 <div style={{ 
                                                     width: '24px', height: '24px', borderRadius: '50%', 
-                                                    background: isCompleted ? '#10b981' : isCurrent ? '#4f46e5' : 'white',
-                                                    border: `2px solid ${isCompleted ? '#10b981' : isCurrent ? '#4f46e5' : '#ef4444'}`,
+                                                    background: isCompleted ? 'var(--success)' : isCurrent ? 'var(--accent)' : 'var(--bg-surface)',
+                                                    border: `2px solid ${isCompleted ? 'var(--success)' : isCurrent ? 'var(--accent)' : 'var(--danger)'}`,
                                                     flexShrink: 0, marginTop: '2px', display: 'flex', 
                                                     alignItems: 'center', justifyContent: 'center',
-                                                    boxShadow: isCompleted ? '0 0 15px rgba(16, 185, 129, 0.4)' : isCurrent ? '0 0 20px rgba(79, 70, 229, 0.5)' : 'none',
+                                                    boxShadow: isCompleted ? '0 0 15px rgba(16, 185, 129, 0.4)' : isCurrent ? '0 0 20px rgba(99, 102, 241, 0.5)' : 'none',
                                                     transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                                                 }}>
                                                     {isCompleted ? (
@@ -772,13 +777,13 @@ export default function TLDashboard() {
                                                     ) : isCurrent ? (
                                                         <div style={{ width: '8px', height: '8px', background: 'white', borderRadius: '50%' }}></div>
                                                     ) : (
-                                                        <div style={{ width: '6px', height: '6px', background: '#ef4444', borderRadius: '50%' }}></div>
+                                                        <div style={{ width: '6px', height: '6px', background: 'var(--danger)', borderRadius: '50%' }}></div>
                                                     )}
                                                 </div>
                                                 <div style={{ flex: 1 }}>
                                                     <span style={{ 
                                                         fontSize: isCurrent ? '15px' : '14px', fontWeight: 800, 
-                                                        color: isCompleted ? '#10b981' : isCurrent ? '#1e293b' : '#ef4444',
+                                                        color: isCompleted ? 'var(--success)' : isCurrent ? 'var(--text-primary)' : 'var(--danger)',
                                                         letterSpacing: '0.02em', transition: 'all 0.3s'
                                                     }}>{status}</span>
                                                     {historyEntry && (
@@ -788,19 +793,19 @@ export default function TLDashboard() {
                                                             borderRadius: '12px', border: '1px solid rgba(79, 70, 229, 0.05)'
                                                         }}>
                                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                <span style={{ fontSize: '11px', fontWeight: 800, color: '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                                <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                                                     {historyEntry.users?.role_identifier || historyEntry.users?.name || 'Updated'}
                                                                 </span>
-                                                                <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                                                                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                                                                     {format(parseISO(historyEntry.changed_at), 'MMM d, HH:mm')}
                                                                 </span>
                                                             </div>
                                                             {historyEntry.note && (
                                                                 <div style={{ 
                                                                     marginTop: '8px', padding: '8px 12px', 
-                                                                    background: 'rgba(255, 255, 255, 0.5)', borderRadius: '8px', 
-                                                                    fontSize: '12px', color: '#475569', 
-                                                                    fontStyle: 'italic', borderLeft: '3px solid #4f46e5'
+                                                                    background: 'var(--bg-elevated)', borderRadius: '8px', 
+                                                                    fontSize: '12px', color: 'var(--text-secondary)', 
+                                                                    fontStyle: 'italic', borderLeft: '3px solid var(--accent)'
                                                                 }}>
                                                                     "{historyEntry.note}"
                                                                 </div>
