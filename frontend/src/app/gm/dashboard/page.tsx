@@ -410,10 +410,10 @@ export default function GMDashboard() {
 
             {/* Sidebar */}
             <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
-                <div className="logo-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span style={{ color: 'var(--accent)', fontSize: '18px', fontWeight: 800, letterSpacing: '-0.5px' }}>TrueUp</span>
-                        <span style={{ marginLeft: '6px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600, marginTop: '2px' }}>GM</span>
+                <div className="logo-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '0 8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <img src="/logo.png" alt="TrueUp Media" className="logo-img" style={{ height: '28px', width: 'auto' }} />
+                        <span style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>GM</span>
                     </div>
                     <button onClick={() => setIsSidebarOpen(false)} className="sidebar-close" style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
                         <X size={24} />
@@ -510,7 +510,7 @@ export default function GMDashboard() {
                     <div className="menu-toggle" onClick={() => setIsSidebarOpen(true)}>
                         <Menu size={24} />
                     </div>
-                    <span style={{ color: 'var(--accent)', fontSize: '16px', fontWeight: 800 }}>TrueUp</span>
+                    <img src="/logo.png" alt="TrueUp Media" className="logo-img" style={{ height: '24px', width: 'auto' }} />
                     <div style={{ width: '40px' }}></div> {/* Spacer */}
                 </div>
 

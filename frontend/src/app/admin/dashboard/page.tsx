@@ -80,7 +80,7 @@ export default function AdminDashboard() {
                   <div className="meter-glow"></div>
                 </div>
               </div>
-              <div className="meter-stats">
+              <div className="meter-label">
                 <span className="percentage">{todayStats.percentage}% Done</span>
                 <span className="remaining">{todayStats.remaining} remaining</span>
               </div>
