@@ -34,6 +34,7 @@ import {
 import { gmApi, adminApi, emergencyApi } from '@/lib/api';
 import { ShieldAlert } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import ScheduleExport from '@/components/ScheduleExport';
 
 interface ContentItem {
     id: string;
@@ -199,6 +200,12 @@ export default function MasterCalendar() {
                             <ChevronDown size={14} style={{ position: 'absolute', right: '10px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
                         </div>
                     </div>
+
+                    <ScheduleExport 
+                        data={calendarData}
+                        clientName={selectedClient === 'all' ? 'TrueUp Media' : clients.find(c => c.id === selectedClient)?.company_name || 'Client'}
+                        month={currentMonth}
+                    />
 
                     <div className="view-mode-toggle">
                         <button 

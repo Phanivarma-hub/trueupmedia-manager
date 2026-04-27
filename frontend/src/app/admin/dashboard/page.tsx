@@ -59,8 +59,8 @@ export default function AdminDashboard() {
   }, []);
 
   return (
-    <div>
-      <header className="page-header">
+    <div className="dashboard-view">
+      <header className="page-header" style={{ marginBottom: '32px' }}>
         <div>
           <h1 className="page-title">Admin Dashboard</h1>
           <p className="page-subtitle">Overview of system activity and client pipelines</p>
@@ -77,15 +77,15 @@ export default function AdminDashboard() {
               </div>
               <div className="progress-label">Tasks Completed</div>
             </div>
-            <div className="meter-wrapper">
+            <div className="meter-wrapper" style={{ flex: 1 }}>
               <div className="meter-bar">
                 <div className="meter-fill" style={{ width: `${todayStats.percentage}%` }}>
                   <div className="meter-glow"></div>
                 </div>
               </div>
-              <div className="meter-label">
-                <span className="percentage">{todayStats.percentage}% Done</span>
-                <span className="remaining">{todayStats.remaining} remaining</span>
+              <div className="meter-stats" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
+                <span className="percentage" style={{ fontSize: '14px', fontWeight: 800, color: 'var(--accent)' }}>{todayStats.percentage}% Complete</span>
+                <span className="remaining" style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>{todayStats.remaining} remaining today</span>
               </div>
             </div>
           </div>
@@ -138,8 +138,8 @@ export default function AdminDashboard() {
         ) : (
           <>
             <div className="stat-card">
-              <div className="stat-icon-box">
-                <Users size={24} />
+              <div className="stat-icon-box" style={{ background: 'rgba(99, 102, 241, 0.15)', color: 'var(--accent)' }}>
+                <Users size={28} />
               </div>
               <div className="stat-info">
                 <h3>Total Clients</h3>
@@ -147,8 +147,8 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon-box" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)' }}>
-                <Calendar size={24} />
+              <div className="stat-icon-box" style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--success)' }}>
+                <Calendar size={28} />
               </div>
               <div className="stat-info">
                 <h3>Scheduled (Month)</h3>
@@ -156,8 +156,8 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon-box" style={{ background: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)' }}>
-                <Activity size={24} />
+              <div className="stat-icon-box" style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--warning)' }}>
+                <Activity size={28} />
               </div>
               <div className="stat-info">
                 <h3>Active Pipelines</h3>
@@ -170,35 +170,58 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)' }}>Pipeline Distribution</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Current status of all content items across the platform</p>
+      <div style={{ margin: '48px 0 24px 0' }}>
+        <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Pipeline Distribution</h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '4px' }}>Current status of all content items across the platform</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
         {loading ? (
           <>
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-20 w-full rounded-2xl" />
+              <Skeleton key={i} className="h-24 w-full rounded-2xl" />
             ))}
           </>
         ) : (
           <>
             {Object.entries(stats?.statusSummary || {}).map(([status, count]) => (
-              <div key={status} style={{ background: 'var(--bg-surface)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border)', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+              <div key={status} style={{ 
+                background: 'var(--bg-surface)', 
+                padding: '24px', 
+                borderRadius: '20px', 
+                border: '1px solid var(--border)', 
+                boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.borderColor = 'var(--accent)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.borderColor = 'var(--border)';
+              }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span className="type-badge post">{status}</span>
+                  <span className="type-badge post" style={{ fontSize: '11px', fontWeight: 800 }}>{status}</span>
                   <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontWeight: 800, fontSize: '20px', color: 'var(--accent)' }}>{count}</span>
+                    <span style={{ fontWeight: 900, fontSize: '24px', color: 'var(--accent)', textShadow: '0 0 15px var(--accent-glow)' }}>{count}</span>
                     <span style={{ color: 'var(--text-muted)', fontSize: '14px', fontWeight: 700 }}> / {stats?.totalItemsThisMonth || 0}</span>
                   </div>
                 </div>
               </div>
             ))}
             {Object.keys(stats?.statusSummary || {}).length === 0 && (
-              <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>
-                No active content items found for this month.
-              </p>
+              <div style={{ 
+                background: 'var(--bg-surface)', 
+                padding: '60px', 
+                borderRadius: '20px', 
+                border: '1px dashed var(--border)',
+                gridColumn: '1 / -1',
+                textAlign: 'center'
+              }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '15px', fontWeight: 600 }}>No active content items found for this month.</p>
+              </div>
             )}
           </>
         )}
