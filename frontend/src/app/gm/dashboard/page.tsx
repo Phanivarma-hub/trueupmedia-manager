@@ -102,6 +102,23 @@ export default function GMDashboard() {
         description: ''
     });
 
+
+    useEffect(() => {
+        if (view === 'master') {
+            fetchMasterCalendar();
+        } else if (view === 'client' && selectedClient && selectedClient !== 'all') {
+            fetchClientCalendar();
+        } else if (view === 'teams') {
+            fetchTeamLeads();
+        } else if (view === 'poc') {
+            fetchPocNotes();
+        } else if (view === 'dashboard') {
+            fetchDashboardStats();
+        }
+    }, [selectedClient, selectedType, selectedPocClient, currentMonth, view, clients.length, teamLeads.length]);
+
+
+
     const fetchPocNotes = async () => {
         setLoading(true);
         try {
@@ -220,7 +237,7 @@ export default function GMDashboard() {
         } else if (view === 'dashboard') {
             fetchDashboardStats();
         }
-    }, [selectedClient, selectedType, selectedPocClient, currentMonth, view, clients.length, teamLeads.length]);
+    }, [selectedClient, selectedType, currentMonth, view, clients.length, teamLeads.length]);
 
     useEffect(() => {
         fetchClients();
@@ -1012,9 +1029,9 @@ export default function GMDashboard() {
                                                     if (dayContent.length > 0 && !isPocView) {
                                                         const contentItems = dayContent as ContentItem[];
                                                         if (window.innerWidth <= 768) {
-                                                            setDailyAgenda({ date: day, items: contentItems });
+                                                            setDailyAgenda({ date: day, items: dayContent as ContentItem[] });
                                                         } else {
-                                                            handleItemClick(contentItems[0]);
+                                                            handleItemClick(dayContent[0] as ContentItem);
                                                         }
                                                     } else if (view === 'client') {
                                                         handleAddClick(day);
@@ -1258,47 +1275,47 @@ export default function GMDashboard() {
                                         </div>
                                     </div>
                                     <div style={{ marginTop: '16px' }}>
-                                    <div style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        background: 'var(--bg-elevated)',
-                                        padding: '12px 16px',
-                                        borderRadius: '12px',
-                                        border: '1px solid var(--border)',
-                                        marginTop: '16px'
-                                    }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <ShieldAlert size={18} color={activeItem.item.is_emergency ? "#ef4444" : "var(--text-muted)"} />
-                                            <span style={{ fontSize: '14px', fontWeight: 700, color: activeItem.item.is_emergency ? "#ef4444" : "var(--text-primary)" }}>
-                                                Emergency Priority
-                                            </span>
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            background: 'var(--bg-elevated)',
+                                            padding: '12px 16px',
+                                            borderRadius: '12px',
+                                            border: '1px solid var(--border)',
+                                            marginTop: '16px'
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <ShieldAlert size={18} color={activeItem.item.is_emergency ? "#ef4444" : "var(--text-muted)"} />
+                                                <span style={{ fontSize: '14px', fontWeight: 700, color: activeItem.item.is_emergency ? "#ef4444" : "var(--text-primary)" }}>
+                                                    Emergency Priority
+                                                </span>
+                                            </div>
+                                            <button
+                                                onClick={handleToggleEmergency}
+                                                style={{
+                                                    width: '44px',
+                                                    height: '24px',
+                                                    borderRadius: '12px',
+                                                    background: activeItem.item.is_emergency ? '#ef4444' : 'var(--bg-surface)',
+                                                    border: `1px solid ${activeItem.item.is_emergency ? '#ef4444' : 'var(--border)'}`,
+                                                    position: 'relative',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                            >
+                                                <div style={{
+                                                    width: '18px',
+                                                    height: '18px',
+                                                    borderRadius: '50%',
+                                                    background: activeItem.item.is_emergency ? 'white' : 'var(--text-muted)',
+                                                    position: 'absolute',
+                                                    top: '2px',
+                                                    left: activeItem.item.is_emergency ? '22px' : '2px',
+                                                    transition: 'all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)'
+                                                }}></div>
+                                            </button>
                                         </div>
-                                        <button
-                                            onClick={handleToggleEmergency}
-                                            style={{
-                                                width: '44px',
-                                                height: '24px',
-                                                borderRadius: '12px',
-                                                background: activeItem.item.is_emergency ? '#ef4444' : 'var(--bg-surface)',
-                                                border: `1px solid ${activeItem.item.is_emergency ? '#ef4444' : 'var(--border)'}`,
-                                                position: 'relative',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.3s ease'
-                                            }}
-                                        >
-                                            <div style={{
-                                                width: '18px',
-                                                height: '18px',
-                                                borderRadius: '50%',
-                                                background: activeItem.item.is_emergency ? 'white' : 'var(--text-muted)',
-                                                position: 'absolute',
-                                                top: '2px',
-                                                left: activeItem.item.is_emergency ? '22px' : '2px',
-                                                transition: 'all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)'
-                                            }}></div>
-                                        </button>
-                                    </div>
                                     </div>
                                     {(() => {
                                         const isOverdue = isBefore(parseISO(activeItem.item.scheduled_datetime), new Date()) && activeItem.item.status !== 'POSTED';
