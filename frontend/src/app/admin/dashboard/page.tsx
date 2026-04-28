@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { 
-  Users, Calendar, Activity, ShieldAlert, FileText, Video, ArrowRight, 
+  Calendar, ShieldAlert, FileText, Video, ArrowRight, 
   X, Clock, Undo2, Check, Edit2, Trash2 
 } from 'lucide-react';
 import { adminApi, emergencyApi, gmApi, ContentItem, StatusHistoryItem } from '@/lib/api';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, isSameDay, parseISO } from 'date-fns';
+import { endOfWeek, format, isSameDay, parseISO, startOfWeek } from 'date-fns';
 import { createClient } from '@/utils/supabase/client';
 
 interface Stats {
@@ -24,6 +24,7 @@ interface ContentDetails {
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [todayStats, setTodayStats] = useState({ total: 0, completed: 0, percentage: 0, remaining: 0 });
+  const [calendarData, setCalendarData] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [emergencyTasks, setEmergencyTasks] = useState<ContentItem[]>([]);
@@ -64,6 +65,7 @@ export default function AdminDashboard() {
       try {
         const calendarRes = await adminApi.getMasterCalendar(format(new Date(), 'yyyy-MM'));
         const data = calendarRes.data;
+        setCalendarData(data);
         const today = new Date();
         const todayItems = data.filter((item: ContentItem) => isSameDay(parseISO(item.scheduled_datetime), today));
         const totalToday = todayItems.length;
@@ -170,6 +172,19 @@ export default function AdminDashboard() {
     }
   };
 
+  const monthTotal = stats?.totalItemsThisMonth || 0;
+  const monthCompleted = (stats?.statusSummary?.POSTED || 0) as number;
+  const monthPercentage = monthTotal > 0 ? Math.round((monthCompleted / monthTotal) * 100) : 0;
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekItems = calendarData.filter((item) => {
+    const itemDate = parseISO(item.scheduled_datetime);
+    return itemDate >= weekStart && itemDate <= weekEnd;
+  });
+  const weekTotal = weekItems.length;
+  const weekCompleted = weekItems.filter((item) => (item.status || '').toUpperCase() === 'POSTED').length;
+  const weekPercentage = weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : 0;
+
   return (
     <div className="dashboard-view">
       <header className="page-header" style={{ marginBottom: '32px' }}>
@@ -187,25 +202,43 @@ export default function AdminDashboard() {
       )}
 
       <div className="daily-stats-banner">
-        <div className="progress-meter-card">
-          <div className="progress-main-info">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '16px' }}>
+          <div className="progress-meter-card" style={{ padding: '20px' }}>
             <h3 className="stat-label">Today&apos;s Progress</h3>
             <div className="progress-values">
               <span className="current">{todayStats.completed}</span>
               <span className="separator">/</span>
               <span className="total">{todayStats.total}</span>
-              <span className="unit">Tasks Posted</span>
-            </div>
-          </div>
-          <div className="meter-visual">
-            <div className="meter-bar">
-              <div className="meter-fill" style={{ width: `${todayStats.percentage}%` }}>
-                <div className="meter-glow"></div>
-              </div>
+              <span className="unit">Tasks</span>
             </div>
             <div className="meter-labels">
               <span className="percentage">{todayStats.percentage}% Done</span>
-              <span className="remaining">{todayStats.remaining} remaining today</span>
+            </div>
+          </div>
+
+          <div className="progress-meter-card" style={{ padding: '20px' }}>
+            <h3 className="stat-label">Week&apos;s Progress</h3>
+            <div className="progress-values">
+              <span className="current">{weekCompleted}</span>
+              <span className="separator">/</span>
+              <span className="total">{weekTotal}</span>
+              <span className="unit">Tasks</span>
+            </div>
+            <div className="meter-labels">
+              <span className="percentage">{weekPercentage}% Done</span>
+            </div>
+          </div>
+
+          <div className="progress-meter-card" style={{ padding: '20px' }}>
+            <h3 className="stat-label">Month&apos;s Progress</h3>
+            <div className="progress-values">
+              <span className="current">{monthCompleted}</span>
+              <span className="separator">/</span>
+              <span className="total">{monthTotal}</span>
+              <span className="unit">Tasks</span>
+            </div>
+            <div className="meter-labels">
+              <span className="percentage">{monthPercentage}% Done</span>
             </div>
           </div>
         </div>
@@ -243,54 +276,6 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
-
-      <div className="stats-grid">
-        {loading ? (
-          <>
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="stat-card">
-                <Skeleton className="h-12 w-12 rounded-xl" />
-                <div className="space-y-2 flex-1">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-8 w-12" />
-                </div>
-              </div>
-            ))}
-          </>
-        ) : (
-          <>
-            <div className="stat-card">
-              <div className="stat-icon-box" style={{ background: 'rgba(99, 102, 241, 0.15)', color: 'var(--accent)' }}>
-                <Users size={28} />
-              </div>
-              <div className="stat-info">
-                <h3>Total Clients</h3>
-                <p className="stat-value">{stats?.totalClients || 0}</p>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon-box" style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--success)' }}>
-                <Calendar size={28} />
-              </div>
-              <div className="stat-info">
-                <h3>Scheduled (Month)</h3>
-                <p className="stat-value">{stats?.totalItemsThisMonth || 0}</p>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon-box" style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--warning)' }}>
-                <Activity size={28} />
-              </div>
-              <div className="stat-info">
-                <h3>Active Pipelines</h3>
-                <p className="stat-value">
-                  {Object.values(stats?.statusSummary || {}).reduce((a, b) => a + b, 0)}
-                </p>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
 
       <div style={{ margin: '48px 0 24px 0' }}>
         <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Pipeline Distribution</h2>

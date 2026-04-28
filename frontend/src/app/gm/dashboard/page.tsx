@@ -268,6 +268,16 @@ export default function GMDashboard() {
         },
         { content: 0, design: 0, posted: 0 }
     );
+    const monthTotal = stats.monthlyContent || 0;
+    const monthCompleted = monthStatusCounts.posted;
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
+    const weekItems = calendarData.filter(item => {
+        const itemDate = parseISO(item.scheduled_datetime);
+        return itemDate >= weekStart && itemDate <= weekEnd;
+    });
+    const weekTotal = weekItems.length;
+    const weekCompleted = weekItems.filter(item => (item.status || '').toUpperCase() === 'POSTED').length;
 
     const handlePrev = () => {
         if (viewMode === 'month') setCurrentMonth(subMonths(currentMonth, 1));
@@ -710,25 +720,34 @@ export default function GMDashboard() {
 
                 {view === 'dashboard' && (
                     <div className="daily-stats-banner">
-                        <div className="progress-meter-card">
-                            <div className="progress-info">
-                                <h3 className="stat-label">Today's Progress</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '16px' }}>
+                            <div className="progress-meter-card" style={{ padding: '20px' }}>
+                                <h3 className="stat-label">Today&apos;s Progress</h3>
                                 <div className="progress-values">
                                     <span className="current">{todayStats.completed}</span>
                                     <span className="separator">/</span>
                                     <span className="total">{todayStats.total}</span>
-                                    <span className="unit"> Tasks Posted</span>
+                                    <span className="unit"> Tasks</span>
                                 </div>
                             </div>
-                            <div className="meter-container">
-                                <div className="meter-bar">
-                                    <div className="meter-fill" style={{ width: `${todayStats.percentage}%` }}>
-                                        <div className="meter-glow"></div>
-                                    </div>
+
+                            <div className="progress-meter-card" style={{ padding: '20px' }}>
+                                <h3 className="stat-label">Week&apos;s Progress</h3>
+                                <div className="progress-values">
+                                    <span className="current">{weekCompleted}</span>
+                                    <span className="separator">/</span>
+                                    <span className="total">{weekTotal}</span>
+                                    <span className="unit"> Tasks</span>
                                 </div>
-                                <div className="meter-label">
-                                    <span className="meter-percentage">{todayStats.percentage}% Complete</span>
-                                    <span>{todayStats.remaining} tasks remaining today</span>
+                            </div>
+
+                            <div className="progress-meter-card" style={{ padding: '20px' }}>
+                                <h3 className="stat-label">Month&apos;s Progress</h3>
+                                <div className="progress-values">
+                                    <span className="current">{monthCompleted}</span>
+                                    <span className="separator">/</span>
+                                    <span className="total">{monthTotal}</span>
+                                    <span className="unit"> Tasks</span>
                                 </div>
                             </div>
                         </div>
@@ -766,64 +785,6 @@ export default function GMDashboard() {
 
                 {view === 'dashboard' && (
                     <div className="dashboard-view">
-                        <div className="stats-grid">
-                            {loading ? (
-                                <>
-                                    <div className="stat-card">
-                                        <Skeleton className="h-12 w-12 rounded-xl" />
-                                        <div className="space-y-2 flex-1">
-                                            <Skeleton className="h-4 w-20" />
-                                            <Skeleton className="h-8 w-12" />
-                                        </div>
-                                    </div>
-                                    <div className="stat-card">
-                                        <Skeleton className="h-12 w-12 rounded-xl" />
-                                        <div className="space-y-2 flex-1">
-                                            <Skeleton className="h-4 w-20" />
-                                            <Skeleton className="h-8 w-12" />
-                                        </div>
-                                    </div>
-                                    <div className="stat-card">
-                                        <Skeleton className="h-12 w-12 rounded-xl" />
-                                        <div className="space-y-2 flex-1">
-                                            <Skeleton className="h-4 w-20" />
-                                            <Skeleton className="h-8 w-12" />
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="stat-card">
-                                        <div className="stat-icon-box" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent)' }}>
-                                            <Users size={24} />
-                                        </div>
-                                        <div className="stat-info">
-                                            <h3>Total Clients</h3>
-                                            <p className="stat-value">{stats.totalClients}</p>
-                                        </div>
-                                    </div>
-                                    <div className="stat-card">
-                                        <div className="stat-icon-box" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)' }}>
-                                            <UserCircle size={24} />
-                                        </div>
-                                        <div className="stat-info">
-                                            <h3>Active Teams</h3>
-                                            <p className="stat-value">{stats.totalTeams}</p>
-                                        </div>
-                                    </div>
-                                    <div className="stat-card">
-                                        <div className="stat-icon-box" style={{ background: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)' }}>
-                                            <FileText size={24} />
-                                        </div>
-                                        <div className="stat-info">
-                                            <h3>This Month's Content</h3>
-                                            <p className="stat-value">{stats.monthlyContent}</p>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-
                         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '24px', marginTop: '24px' }} className="responsive-dashboard-grid">
                             <div className="dashboard-card">
                                 <div className="card-header">
