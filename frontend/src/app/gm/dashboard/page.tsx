@@ -175,7 +175,10 @@ export default function GMDashboard() {
         setLoading(true);
         try {
             // Fetch master calendar for the current month to get throughput and status breakdown
-            const res = await gmApi.getMasterCalendar(format(new Date(), 'yyyy-MM'));
+            const res = await gmApi.getMasterCalendar(
+                format(new Date(), 'yyyy-MM'),
+                selectedClient === 'all' ? undefined : selectedClient
+            );
             const data = res.data as ContentItem[];
 
             const breakdown = data.reduce((acc: any, item) => {
@@ -794,6 +797,22 @@ export default function GMDashboard() {
                                     <h3 className="card-title">Production Pipeline</h3>
                                     <span className="card-badge">Live Status</span>
                                 </div>
+                                
+                                <div className="pipeline-summary" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px', padding: '0 8px' }}>
+                                    <div className="summary-item" style={{ background: 'var(--bg-elevated)', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px solid var(--border)' }}>
+                                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 700, textTransform: 'uppercase' }}>Total Tasks</p>
+                                        <p style={{ fontSize: '24px', fontWeight: 800 }}>{stats.monthlyContent}</p>
+                                    </div>
+                                    <div className="summary-item" style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                                        <p style={{ fontSize: '11px', color: 'var(--success)', marginBottom: '4px', fontWeight: 700, textTransform: 'uppercase' }}>Completed</p>
+                                        <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--success)' }}>{stats.statusBreakdown['POSTED'] || 0}</p>
+                                    </div>
+                                    <div className="summary-item" style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                                        <p style={{ fontSize: '11px', color: 'var(--warning)', marginBottom: '4px', fontWeight: 700, textTransform: 'uppercase' }}>Pending</p>
+                                        <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--warning)' }}>{stats.monthlyContent - (stats.statusBreakdown['POSTED'] || 0)}</p>
+                                    </div>
+                                </div>
+
                                 <div className="status-pipeline">
                                     {Object.entries(stats.statusBreakdown).map(([status, count]: any) => (
                                         <div key={status} className="pipeline-item">
@@ -815,25 +834,42 @@ export default function GMDashboard() {
 
                             <div className="dashboard-card">
                                 <div className="card-header">
-                                    <h3 className="card-title">Quick Actions</h3>
+                                    <h3 className="card-title">Filter by Client</h3>
                                 </div>
-                                <div className="quick-actions-list">
-                                    <button onClick={() => setView('teams')} className="action-item">
-                                        <div className="action-icon" style={{ background: 'var(--bg-elevated)' }}><Users size={18} /></div>
-                                        <div className="action-text">
-                                            <p className="action-title">Manage Teams</p>
-                                            <p className="action-desc">Assign clients to team leads</p>
-                                        </div>
-                                        <ChevronRight size={16} />
-                                    </button>
-                                    <button onClick={() => setView('master')} className="action-item">
-                                        <div className="action-icon" style={{ background: 'var(--bg-elevated)' }}><Globe size={18} /></div>
-                                        <div className="action-text">
-                                            <p className="action-title">Master Calendar</p>
-                                            <p className="action-desc">View company-wide schedule</p>
-                                        </div>
-                                        <ChevronRight size={16} />
-                                    </button>
+                                <div style={{ padding: '24px' }}>
+                                    <div className="client-dropdown-wrapper" style={{ width: '100%', marginBottom: '16px' }}>
+                                        <select
+                                            className="client-dropdown"
+                                            style={{ width: '100%', padding: '12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '12px', color: 'var(--text-primary)', appearance: 'none', cursor: 'pointer' }}
+                                            value={selectedClient}
+                                            onChange={(e) => setSelectedClient(e.target.value)}
+                                        >
+                                            <option value="all">All Clients</option>
+                                            {clients.map(c => (
+                                                <option key={c.id} value={c.id}>{c.company_name}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown size={16} className="dropdown-chevron" style={{ right: '16px' }} />
+                                    </div>
+                                    <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                                        Select a client to filter the production pipeline and performance metrics. This view helps monitor specific client throughput.
+                                    </p>
+                                    <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <button onClick={() => setView('teams')} className="action-item-simple" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '10px', width: '100%', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <Users size={16} color="var(--accent)" />
+                                                <span style={{ fontSize: '13px', fontWeight: 600 }}>Manage Teams</span>
+                                            </div>
+                                            <ArrowRight size={14} color="var(--text-muted)" />
+                                        </button>
+                                        <button onClick={() => setView('master')} className="action-item-simple" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '10px', width: '100%', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <Globe size={16} color="var(--accent)" />
+                                                <span style={{ fontSize: '13px', fontWeight: 600 }}>Master Calendar</span>
+                                            </div>
+                                            <ArrowRight size={14} color="var(--text-muted)" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

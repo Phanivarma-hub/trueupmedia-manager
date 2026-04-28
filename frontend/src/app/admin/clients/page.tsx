@@ -108,11 +108,11 @@ export default function ClientManagement() {
   return (
     <div>
       <header className="page-header">
-        <div>
+        <div className="header-info">
           <h1 className="page-title">Client Management</h1>
-          <p className="page-subtitle">Onboard and manage TrueUp Media client companies</p>
+          <p className="page-subtitle">Onboard and manage TrueUp Media client companies • <strong>{clients.length} Total</strong></p>
         </div>
-        <button className="btn-add" onClick={handleAddClick}>
+        <button className="btn-add" onClick={handleAddClick} style={{ marginRight: '48px' }}>
           <Plus size={18} />
           Add New Client
         </button>
@@ -128,6 +128,10 @@ export default function ClientManagement() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+          </div>
+          <div className="table-summary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>Total Clients:</span>
+            <span style={{ background: 'var(--accent)', color: 'white', padding: '2px 10px', borderRadius: '12px', fontSize: '14px', fontWeight: 800, boxShadow: '0 4px 12px var(--accent-glow)' }}>{clients.length}</span>
           </div>
         </div>
 

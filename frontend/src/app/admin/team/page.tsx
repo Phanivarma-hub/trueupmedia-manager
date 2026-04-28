@@ -94,11 +94,11 @@ export default function TeamManagement() {
   return (
     <div>
       <header className="page-header">
-        <div>
+        <div className="header-info">
           <h1 className="page-title">Team Management</h1>
-          <p className="page-subtitle">Manage Team Leads and access permissions</p>
+          <p className="page-subtitle">Manage Team Leads and access permissions • <strong>{team.length} Total</strong></p>
         </div>
-        <button className="btn-add" onClick={handleAddClick}>
+        <button className="btn-add" onClick={handleAddClick} style={{ marginRight: '48px' }}>
           <Plus size={18} />
           Add Team Lead
         </button>
@@ -114,6 +114,10 @@ export default function TeamManagement() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+          </div>
+          <div className="table-summary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>Total Team:</span>
+            <span style={{ background: 'var(--accent)', color: 'white', padding: '2px 10px', borderRadius: '12px', fontSize: '14px', fontWeight: 800, boxShadow: '0 4px 12px var(--accent-glow)' }}>{team.length}</span>
           </div>
         </div>
 

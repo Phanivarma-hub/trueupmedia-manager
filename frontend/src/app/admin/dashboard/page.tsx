@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { 
   Users, Calendar, Activity, ShieldAlert, FileText, Video, ArrowRight, 
-  X, Clock, Undo2, Check, Edit2, Trash2 
+  X, Clock, Undo2, Check, Edit2, Trash2, ChevronDown, Filter 
 } from 'lucide-react';
 import { adminApi, emergencyApi, gmApi, ContentItem, StatusHistoryItem } from '@/lib/api';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,6 +27,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [emergencyTasks, setEmergencyTasks] = useState<ContentItem[]>([]);
+  const [clients, setClients] = useState<any[]>([]);
+  const [selectedClient, setSelectedClient] = useState<string>('all');
   const [activeItem, setActiveItem] = useState<ContentDetails | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusNote, setStatusNote] = useState('');
@@ -50,43 +52,72 @@ export default function AdminDashboard() {
     }
   };
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await adminApi.getStats();
-        setStats(res.data);
-      } catch (err) {
-        console.error('Failed to load stats:', err instanceof Error ? err.message : String(err));
-        setError(err instanceof Error ? err.message : String(err));
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      // Fetch clients if not already loaded
+      if (clients.length === 0) {
+        const clientsRes = await adminApi.getClients();
+        setClients(clientsRes.data);
       }
 
-      // Fetch master calendar separately so stats still show if this fails
-      try {
-        const calendarRes = await adminApi.getMasterCalendar(format(new Date(), 'yyyy-MM'));
-        const data = calendarRes.data;
-        const today = new Date();
-        const todayItems = data.filter((item: ContentItem) => isSameDay(parseISO(item.scheduled_datetime), today));
-        const totalToday = todayItems.length;
-        const completedToday = todayItems.filter((item: ContentItem) => item.status === 'POSTED').length;
-        
-        setTodayStats({
-          total: totalToday,
-          completed: completedToday,
-          remaining: totalToday - completedToday,
-          percentage: totalToday > 0 ? Math.round((completedToday / totalToday) * 100) : 0
+      // Fetch master calendar for the current month to get throughput and status breakdown
+      const calendarRes = await adminApi.getMasterCalendar(
+        format(new Date(), 'yyyy-MM'),
+        selectedClient === 'all' ? undefined : selectedClient
+      );
+      const data = calendarRes.data;
+
+      const breakdown = data.reduce((acc: any, item: ContentItem) => {
+        acc[item.status] = (acc[item.status] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Calculate today's stats
+      const today = new Date();
+      const todayItems = data.filter((item: ContentItem) => isSameDay(parseISO(item.scheduled_datetime), today));
+      const totalToday = todayItems.length;
+      const completedToday = todayItems.filter((item: ContentItem) => item.status === 'POSTED').length;
+      
+      setTodayStats({
+        total: totalToday,
+        completed: completedToday,
+        remaining: totalToday - completedToday,
+        percentage: totalToday > 0 ? Math.round((completedToday / totalToday) * 100) : 0
+      });
+
+      // Update stats state for the pipeline and summary
+      // If we have a selected client, we use the local data for items count
+      // Otherwise we can use the getStats() for global totals if preferred
+      if (selectedClient === 'all') {
+        const statsRes = await adminApi.getStats();
+        setStats({
+          ...statsRes.data,
+          statusSummary: breakdown,
+          totalItemsThisMonth: data.length
         });
-
-        // Fetch all emergency tasks
-        await fetchEmergencyTasks();
-
-      } catch (err) {
-        console.error('Failed to load calendar:', err instanceof Error ? err.message : String(err));
+      } else {
+        setStats(prev => ({
+          totalClients: clients.length,
+          totalItemsThisMonth: data.length,
+          statusSummary: breakdown
+        }));
       }
 
+      // Fetch all emergency tasks
+      await fetchEmergencyTasks();
+
+    } catch (err) {
+      console.error('Failed to load dashboard data:', err instanceof Error ? err.message : String(err));
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
       setLoading(false);
-    };
-    fetchStats();
-  }, []);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [selectedClient]);
 
   const handleTaskClick = async (taskId: string) => {
     try {
@@ -228,7 +259,7 @@ export default function AdminDashboard() {
                   {task.content_type === 'Post' ? <FileText size={20} /> : <Video size={20} />}
                 </div>
                 <div className="emergency-card-body">
-                  <div className="emergency-card-client">{task.clients?.company_name.toUpperCase()}</div>
+                  <div className="emergency-card-client">{task.clients?.company_name?.toUpperCase()}</div>
                   <div className="emergency-card-details">
                     <span className="type">{task.content_type}</span>
                     <span className="dot">•</span>
@@ -244,7 +275,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      <div className="stats-grid">
+      <div className="stats-grid" style={{ marginBottom: '32px' }}>
         {loading ? (
           <>
             {[1, 2, 3].map((i) => (
@@ -292,64 +323,88 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      <div style={{ margin: '48px 0 24px 0' }}>
-        <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Pipeline Distribution</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '4px' }}>Current status of all content items across the platform</p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '24px', marginBottom: '32px' }}>
+        <div className="dashboard-card" style={{ background: 'var(--bg-surface)', padding: '24px', borderRadius: '24px', border: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 800 }}>Production Pipeline</h3>
+                <span style={{ fontSize: '11px', background: 'var(--bg-elevated)', padding: '4px 10px', borderRadius: '20px', fontWeight: 700, color: 'var(--accent)' }}>Live Status</span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
+                <div style={{ background: 'var(--bg-elevated)', padding: '16px', borderRadius: '16px', textAlign: 'center', border: '1px solid var(--border)' }}>
+                    <p style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 700, textTransform: 'uppercase' }}>Total Tasks</p>
+                    <p style={{ fontSize: '20px', fontWeight: 900 }}>{stats?.totalItemsThisMonth || 0}</p>
+                </div>
+                <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '16px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                    <p style={{ fontSize: '10px', color: 'var(--success)', marginBottom: '4px', fontWeight: 700, textTransform: 'uppercase' }}>Completed</p>
+                    <p style={{ fontSize: '20px', fontWeight: 900, color: 'var(--success)' }}>{stats?.statusSummary?.['POSTED'] || 0}</p>
+                </div>
+                <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '16px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                    <p style={{ fontSize: '10px', color: 'var(--warning)', marginBottom: '4px', fontWeight: 700, textTransform: 'uppercase' }}>Pending</p>
+                    <p style={{ fontSize: '20px', fontWeight: 900, color: 'var(--warning)' }}>{(stats?.totalItemsThisMonth || 0) - (stats?.statusSummary?.['POSTED'] || 0)}</p>
+                </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {Object.entries(stats?.statusSummary || {}).map(([status, count]) => (
+                    <div key={status} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'var(--bg-elevated)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-secondary)' }}>{status}</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                            <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)' }}>{count}</span>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>/ {stats?.totalItemsThisMonth || 0}</span>
+                        </div>
+                    </div>
+                ))}
+                {Object.keys(stats?.statusSummary || {}).length === 0 && (
+                    <p style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)', fontSize: '13px' }}>No content items this month.</p>
+                )}
+            </div>
+        </div>
+
+        <div className="dashboard-card" style={{ background: 'var(--bg-surface)', padding: '24px', borderRadius: '24px', border: '1px solid var(--border)' }}>
+            <div style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 800 }}>Filter by Client</h3>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>Select a client to monitor their specific pipeline progress.</p>
+            </div>
+
+            <div style={{ position: 'relative', marginBottom: '20px' }}>
+                <select
+                    style={{ 
+                        width: '100%', 
+                        padding: '14px 40px 14px 16px', 
+                        background: 'var(--bg-elevated)', 
+                        border: '1px solid var(--border)', 
+                        borderRadius: '16px', 
+                        color: 'var(--text-primary)',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        appearance: 'none',
+                        cursor: 'pointer'
+                    }}
+                    value={selectedClient}
+                    onChange={(e) => setSelectedClient(e.target.value)}
+                >
+                    <option value="all">All Clients</option>
+                    {clients.map(c => (
+                        <option key={c.id} value={c.id}>{c.company_name}</option>
+                    ))}
+                </select>
+                <ChevronDown size={18} style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }} />
+            </div>
+
+            <div style={{ background: 'rgba(99, 102, 241, 0.05)', padding: '16px', borderRadius: '16px', border: '1px dashed var(--accent)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent)', marginBottom: '8px' }}>
+                    <Filter size={16} />
+                    <span style={{ fontSize: '13px', fontWeight: 700 }}>Filter Active</span>
+                </div>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                    Currently showing {selectedClient === 'all' ? 'aggregated data for all clients' : `data for ${clients.find(c => c.id === selectedClient)?.company_name}`}.
+                </p>
+            </div>
+        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-        {loading ? (
-          <>
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-24 w-full rounded-2xl" />
-            ))}
-          </>
-        ) : (
-          <>
-            {Object.entries(stats?.statusSummary || {}).map(([status, count]) => {
-              return (
-                <div key={status} style={{ 
-                  background: 'var(--bg-surface)', 
-                  padding: '24px', 
-                  borderRadius: '20px', 
-                  border: '1px solid var(--border)', 
-                  boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
-                  backdropFilter: 'blur(10px)',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.borderColor = 'var(--accent)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.borderColor = 'var(--border)';
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span className="type-badge post" style={{ fontSize: '11px', fontWeight: 800 }}>{status}</span>
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontWeight: 900, fontSize: '24px', color: 'var(--accent)', textShadow: '0 0 15px var(--accent-glow)' }}>{count}</span>
-                      <span style={{ color: 'var(--text-muted)', fontSize: '14px', fontWeight: 700 }}> / {stats?.totalItemsThisMonth || 0}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-            {Object.keys(stats?.statusSummary || {}).length === 0 && (
-              <div style={{ 
-                background: 'var(--bg-surface)', 
-                padding: '60px', 
-                borderRadius: '20px', 
-                border: '1px dashed var(--border)',
-                gridColumn: '1 / -1',
-                textAlign: 'center'
-              }}>
-                <p style={{ color: 'var(--text-muted)', fontSize: '15px', fontWeight: 600 }}>No active content items found for this month.</p>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+
 
       {/* Task Details Modal */}
       {isModalOpen && activeItem && (
