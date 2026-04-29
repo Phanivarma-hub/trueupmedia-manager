@@ -1659,20 +1659,19 @@
     .month-nav {
         width: 100% !important;
         justify-content: space-between !important;
-        margin-bottom: 12px !important;
     }
 
     .month-label {
-        font-size: 18px !important;
+        font-size: 16px !important;
         font-weight: 800 !important;
         width: auto !important;
     }
 
     .export-btn {
-        width: 100% !important;
-        justify-content: center !important;
-        padding: 14px 20px !important;
-        margin-bottom: 12px !important;
+        width: 45px !important;
+        height: 45px !important;
+        padding: 0 !important;
+        margin-bottom: 0 !important;
     }
 
     /* Premium Mobile Header Fixes */
@@ -2030,6 +2029,51 @@
         padding: 20px !important;
         min-height: auto !important;
     }
+
+    .page-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 16px !important;
+        padding-right: 0 !important;
+    }
+
+    .header-controls {
+        width: 100% !important;
+        flex-wrap: wrap !important;
+        gap: 12px !important;
+        justify-content: flex-start !important;
+    }
+
+    .page-title {
+        font-size: 24px !important;
+    }
+
+    .view-mode-toggle {
+        margin-right: 0 !important;
+        margin-bottom: 12px !important;
+    }
+
+    .form-row {
+        flex-direction: column !important;
+        gap: 16px !important;
+        display: flex !important;
+    }
+
+    .form-row > .form-group {
+        width: 100% !important;
+    }
+
+    .modal-content {
+        width: 95% !important;
+        max-width: 95vw !important;
+        padding: 20px !important;
+        margin: 10px auto !important;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
 }
 
 /* --- Dashboard Layout Grids --- */
@@ -2051,4 +2095,60 @@
     .admin-main-grid {
         grid-template-columns: 1fr;
     }
+}
+
+/* ─── Role Badges ─── */
+.type-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+}
+
+.type-badge.admin {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.type-badge.gm {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10B981;
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.type-badge.coo {
+    background: rgba(245, 158, 11, 0.1);
+    color: #F59E0B;
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.type-badge.team-lead {
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366F1;
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.type-badge.posting-team {
+    background: rgba(6, 182, 212, 0.1);
+    color: #06B6D4;
+    border-color: rgba(6, 182, 212, 0.2);
+}
+
+.type-badge.post {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10B981;
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.type-badge.reel {
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366F1;
+    border-color: rgba(99, 102, 241, 0.2);
 }

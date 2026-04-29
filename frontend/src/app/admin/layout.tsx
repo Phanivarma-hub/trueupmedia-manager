@@ -130,9 +130,6 @@ export default function AdminLayout({
       </aside>
 
       <main className="main-content">
-        <div style={{ position: 'fixed', top: '20px', right: '24px', zIndex: 2100 }}>
-          <NotificationBell />
-        </div>
         {children}
       </main>
     </div>

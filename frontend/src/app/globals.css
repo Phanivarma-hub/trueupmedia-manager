@@ -279,3 +279,44 @@ a {
     }
 }
 
+/* ─── Global Responsive Utilities ─── */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column !important;
+        gap: 16px !important;
+        display: flex !important;
+    }
+
+    .form-row > .form-group {
+        width: 100% !important;
+    }
+
+    .modal-content {
+        width: 95% !important;
+        max-width: 95vw !important;
+        padding: 20px !important;
+        margin: 10px auto !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: block !important;
+    }
+    
+    .daily-stats-banner {
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobile-only {
+        display: none !important;
+    }
+}
+

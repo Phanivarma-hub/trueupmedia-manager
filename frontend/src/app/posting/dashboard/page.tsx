@@ -404,7 +404,7 @@ export default function PostingDashboard() {
 
                 {view === 'dashboard' && (
                     <div className="daily-stats-banner">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '16px' }}>
+                        <div className="posting-stats-grid">
                             <div className="progress-meter-card" style={{ padding: '20px' }}>
                                 <h3 className="stat-label">Today&apos;s Progress</h3>
                                 <div className="progress-values">

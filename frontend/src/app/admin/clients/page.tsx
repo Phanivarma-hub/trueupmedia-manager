@@ -112,7 +112,7 @@ export default function ClientManagement() {
           <h1 className="page-title">Client Management</h1>
           <p className="page-subtitle">Onboard and manage TrueUp Media client companies • <strong>{clients.length} Total</strong></p>
         </div>
-        <button className="btn-add" onClick={handleAddClick} style={{ marginRight: '48px' }}>
+        <button className="btn-add" onClick={handleAddClick}>
           <Plus size={18} />
           Add New Client
         </button>
@@ -259,7 +259,7 @@ export default function ClientManagement() {
                   style={{ resize: 'none' }}
                 />
               </div>
-              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Posts Per Month *</label>
                   <input 

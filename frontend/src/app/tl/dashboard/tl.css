@@ -977,7 +977,23 @@
     }
 }
 
+.tl-main-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+}
+
 @media (max-width: 768px) {
+    .daily-stats-banner {
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+
+    .tl-main-grid {
+        grid-template-columns: 1fr !important;
+    }
+
     .stats-grid {
         grid-template-columns: 1fr !important;
     }

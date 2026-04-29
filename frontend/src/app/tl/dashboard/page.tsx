@@ -621,7 +621,7 @@ export default function TLDashboard() {
 
                 {view === 'dashboard' && (
                     <div className="dashboard-view">
-                        <div className="dashboard-grid" style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px' }}>
+                        <div className="tl-main-grid">
                             <div className="dashboard-card">
                                 <div className="card-header">
                                     <h2 className="card-title">Recent Activity</h2>

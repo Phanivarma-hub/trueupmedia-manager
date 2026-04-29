@@ -830,3 +830,83 @@
 [data-theme='light'] .modal-overlay {
     background: rgba(15, 23, 42, 0.4);
 }
+
+/* ─── Grid Systems ─── */
+.coo-main-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.pipeline-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+/* ─── Daily Stats Banner ─── */
+.daily-stats-banner {
+    margin-bottom: 24px;
+    display: flex;
+    gap: 20px;
+}
+
+.progress-meter-card {
+    flex: 1;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    min-height: 130px;
+    justify-content: center;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1024px) {
+    .coo-main-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .main-content {
+        padding: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .daily-stats-banner {
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+
+    .pipeline-summary-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .progress-meter-card {
+        padding: 20px !important;
+        min-height: auto !important;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .header-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

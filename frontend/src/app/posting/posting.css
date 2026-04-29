@@ -1153,5 +1153,26 @@
         align-items: stretch !important;
         gap: 12px !important;
     }
+
+    .daily-stats-banner {
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+
+    .posting-stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .progress-meter-card {
+        padding: 20px !important;
+        min-height: auto !important;
+    }
+}
+
+.posting-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
 }
 

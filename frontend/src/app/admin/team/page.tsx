@@ -18,7 +18,7 @@ export default function TeamManagement() {
     email: '',
     password: '',
     role: 'TEAM LEAD',
-    role_identifier: 'TL1',
+    role_identifier: '',
   });
 
   const fetchTeam = async () => {
@@ -38,7 +38,7 @@ export default function TeamManagement() {
 
   const handleAddClick = () => {
     setEditingMember(null);
-    setFormData({ name: '', email: '', password: '', role: 'TEAM LEAD', role_identifier: 'TL1' });
+    setFormData({ name: '', email: '', password: '', role: 'TEAM LEAD', role_identifier: '' });
     setShowModal(true);
   };
 
@@ -98,9 +98,9 @@ export default function TeamManagement() {
           <h1 className="page-title">Team Management</h1>
           <p className="page-subtitle">Manage Team Leads and access permissions • <strong>{team.length} Total</strong></p>
         </div>
-        <button className="btn-add" onClick={handleAddClick} style={{ marginRight: '48px' }}>
+        <button className="btn-add" onClick={handleAddClick}>
           <Plus size={18} />
-          Add Team Lead
+          Add Team Member
         </button>
       </header>
 
@@ -167,8 +167,8 @@ export default function TeamManagement() {
                       <td data-label="Email"><span>{member.email}</span></td>
                       <td data-label="Role">
                         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                          <span className="type-badge" style={{ background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', minWidth: '100px', textAlign: 'center' }}>
-                            TEAM LEAD
+                          <span className={`type-badge ${member.role.toLowerCase().replace(' ', '-')}`} style={{ minWidth: '100px', textAlign: 'center' }}>
+                            {member.role}
                           </span>
                           {member.role_identifier && (
                             <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 600 }}>
@@ -208,7 +208,7 @@ export default function TeamManagement() {
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
-              <h3 className="modal-title">{editingMember ? 'Edit Team Lead' : 'Create Team Lead'}</h3>
+              <h3 className="modal-title">{editingMember ? 'Edit Team Member' : 'Create Team Member'}</h3>
               <button onClick={() => setShowModal(false)} className="modal-close"><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmit}>
@@ -254,21 +254,39 @@ export default function TeamManagement() {
                 </div>
               </div>
               <div className="form-group">
-                <label className="form-label">Team Identifier *</label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="text"
-                    className="form-input"
-                    required
-                    value={formData.role_identifier}
-                    onChange={(e) => setFormData({ ...formData, role_identifier: e.target.value.toUpperCase() })}
-                    placeholder="e.g. TL1, TL2, TL3"
-                    style={{ width: '100%' }}
-                  />
-                  <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '11px', fontWeight: 600 }}>ID</div>
-                </div>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>Role will be set to TEAM LEAD automatically.</p>
+                <label className="form-label">System Role *</label>
+                <select 
+                  className="form-input"
+                  required
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  style={{ width: '100%' }}
+                >
+                  <option value="GM">General Manager (GM)</option>
+                  <option value="COO">COO</option>
+                  <option value="TEAM LEAD">Team Lead (TL)</option>
+                  <option value="POSTING TEAM">Posting Team</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
               </div>
+
+              {(formData.role === 'TEAM LEAD' || formData.role === 'POSTING TEAM') && (
+                <div className="form-group">
+                  <label className="form-label">{formData.role} Identifier *</label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      required
+                      value={formData.role_identifier}
+                      onChange={(e) => setFormData({ ...formData, role_identifier: e.target.value.toUpperCase() })}
+                      placeholder={formData.role === 'TEAM LEAD' ? "e.g. TL1, TL2" : "e.g. P1, P2"}
+                      style={{ width: '100%' }}
+                    />
+                    <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '11px', fontWeight: 600 }}>ID</div>
+                  </div>
+                </div>
+              )}
               <div className="modal-footer">
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
                 <button type="submit" className="btn-primary" disabled={loading} style={{ width: 'auto', padding: '10px 24px' }}>

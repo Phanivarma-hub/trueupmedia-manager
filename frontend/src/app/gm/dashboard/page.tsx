@@ -842,14 +842,14 @@ export default function GMDashboard() {
                             </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '24px', marginTop: '24px' }} className="responsive-dashboard-grid">
+                        <div className="responsive-dashboard-grid">
                             <div className="dashboard-card">
                                 <div className="card-header">
                                     <h3 className="card-title">Production Pipeline</h3>
                                     <span className="card-badge">Live Status</span>
                                 </div>
                                 
-                                <div className="pipeline-summary" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px', padding: '0 8px' }}>
+                                <div className="pipeline-summary">
                                     <div className="summary-item" style={{ background: 'var(--bg-elevated)', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px solid var(--border)' }}>
                                         <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 700, textTransform: 'uppercase' }}>Total Tasks</p>
                                         <p style={{ fontSize: '24px', fontWeight: 800 }}>{stats.monthlyContent}</p>

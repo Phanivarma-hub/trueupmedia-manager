@@ -100,8 +100,8 @@ export default function CooTeamManagement() {
                                             <td data-label="Email"><span>{member.email}</span></td>
                                             <td data-label="Role">
                                                 <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                                                    <span className="type-badge" style={{ background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', minWidth: '100px', textAlign: 'center' }}>
-                                                        TEAM LEAD
+                                                    <span className={`type-badge ${member.role.toLowerCase().replace(' ', '-')}`} style={{ minWidth: '100px', textAlign: 'center' }}>
+                                                        {member.role}
                                                     </span>
                                                     {member.role_identifier && (
                                                         <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 600 }}>
